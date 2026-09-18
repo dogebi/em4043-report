@@ -827,5 +827,11 @@
   <footer>
     <p>报告口径：EM4043 项目实际测试记录。页面为管理层汇报初稿，不替代 Jira 原始数据和正式月度统计。</p>
   </footer>
+  <script>
+    document.querySelectorAll(".hero-demo video").forEach((video) => {
+      video.playbackRate = 2;
+      video.addEventListener("loadedmetadata", () => { video.playbackRate = 2; });
+    });
+  </script>
 </body>
 </html>
