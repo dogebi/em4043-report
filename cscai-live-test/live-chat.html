@@ -1,0 +1,385 @@
+<!-- CSC AI Work API 실채팅 클라이언트 (단일 파일)
+     경로 계약(라이브 스펙 실측):
+       GET  /agent-work-api/v1/sessions                         세션 목록
+       GET  /agent-work-api/v1/sessions/{id}/messages?limit=..  이력
+       POST /agent-work-api/v1/sessions/{id}/messages           메시지 전송 {content, run_mode, deep_thinking}
+       GET  /agent-work-api/v1/sessions/{id}/stream?token=..    SSE (Accept: text/event-stream)
+     헤더: Authorization: Bearer <access_token>, Hubid: <work instance no>
+     프록시(live-chat-proxy.mjs) 경유 시 CORS/직결 차단 없이 동작 -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CSC AI Work API — 실채팅</title>
+<style>
+  :root { --line:#dde3ec; --ink:#141a24; --muted:#6b7686; --bg:#f7f8fa; --accent:#1f6feb; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+         font:14px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",Arial,sans-serif; }
+  .wrap { display:grid; grid-template-columns:320px 1fr; gap:0; min-height:100vh; }
+  /* 비대칭: 좌측 고정 폭 제어판 + 우측 가변 대화 */
+  aside { border-right:1px solid var(--line); background:#fff; padding:16px 16px 20px; }
+  main { padding:16px 20px 24px; display:flex; flex-direction:column; min-height:100vh; }
+  h1 { font-size:15px; margin:0 0 14px; letter-spacing:.2px; }
+  h2 { font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted);
+       margin:18px 0 8px; font-weight:700; }
+  label { display:block; margin-bottom:10px; font-size:12px; color:var(--muted); font-weight:700; }
+  input,select,textarea,button { font:inherit; color:inherit; }
+  input,select,textarea { width:100%; padding:8px 9px; border:1px solid var(--line); border-radius:6px;
+                           background:#fff; margin-top:4px; }
+  textarea { resize:vertical; }
+  button { border:1px solid var(--line); background:#fff; border-radius:6px; padding:8px 12px;
+           font-weight:700; cursor:pointer; }
+  button.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+  button:disabled { opacity:.45; cursor:not-allowed; }
+  .row { display:flex; gap:8px; }
+  .row > * { flex:1; }
+  .sessions { max-height:280px; overflow:auto; border:1px solid var(--line); border-radius:6px; margin-top:6px; }
+  .sessions div { padding:7px 9px; border-bottom:1px solid var(--line); cursor:pointer; font-size:12.5px; }
+  .sessions div:last-child { border-bottom:0; }
+  .sessions div:hover { background:#f1f5fb; }
+  .sessions div.on { background:#e8f0fe; font-weight:700; }
+  .chat { flex:1; overflow:auto; border:1px solid var(--line); border-radius:8px; background:#fff;
+          padding:14px; margin:10px 0 10px; }
+  .m { white-space:pre-wrap; word-break:break-word; padding:9px 11px; border-radius:8px; margin:0 0 10px;
+       max-width:78%; }
+  .m.user { margin-left:auto; background:#1f6feb; color:#fff; }
+  .m.ai { background:#f3f5f8; }
+  .m.err { background:#fdecec; border:1px solid #f3c2c2; color:#8a1f1f; max-width:100%; font-size:13px; }
+  .m.sys { background:#fff; border:1px dashed var(--line); color:var(--muted); max-width:100%; font-size:12.5px; }
+  .tools { font-size:12.5px; color:var(--muted); border-left:2px solid var(--line); padding:2px 0 2px 8px;
+           margin:0 0 10px; white-space:pre-wrap; max-width:78%; }
+  .bar { display:flex; gap:8px; align-items:flex-end; }
+  .bar textarea { min-height:56px; margin:0; }
+  .meta { font-size:12px; color:var(--muted); margin:6px 0 0; }
+  code { background:#eef1f5; padding:1px 4px; border-radius:4px; font-size:12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside>
+    <h1>CSC AI Work API — 실채팅</h1>
+
+    <h2>연결</h2>
+    <label>API Base (프록시 주소)
+      <input id="base" value="http://127.0.0.1:8788">
+    </label>
+    <label>Bearer Token (access_token)
+      <input id="token" type="password" placeholder="localStorage.access_token 값">
+    </label>
+    <label>Hubid (선택 — 비우면 서버가 사용자로부터 인스턴스 해석)
+      <input id="hubid" placeholder="ex) 100001">
+    </label>
+    <div class="row">
+      <button id="saveToken">토큰 저장</button>
+      <button id="test">연결 테스트</button>
+    </div>
+    <p class="meta" id="conn">미확인</p>
+
+    <h2>세션</h2>
+    <div class="row">
+      <button id="loadSessions" class="primary">세션 목록 불러오기</button>
+    </div>
+    <div class="sessions" id="sessions"></div>
+    <label style="margin-top:10px">선택된 Session ID
+      <input id="sessionId" placeholder="목록에서 선택하거나 직접 입력">
+    </label>
+    <button id="loadHistory">이력 불러오기</button>
+
+    <h2>전송 옵션</h2>
+    <label>run_mode
+      <select id="runMode"><option value="agent">agent</option><option value="qa">qa</option></select>
+    </label>
+    <label>deep_thinking
+      <select id="deep">
+        <option value="false">false</option>
+        <option value="low">low</option>
+        <option value="medium">medium</option>
+        <option value="xhigh">xhigh</option>
+      </select>
+    </label>
+
+    <h2>요청 로그</h2>
+    <div class="sessions" id="log" style="max-height:200px"></div>
+  </aside>
+
+  <main>
+    <div class="chat" id="chat" aria-live="polite"></div>
+    <div class="bar">
+      <textarea id="input" placeholder="메시지 입력 (Enter 전송 / Shift+Enter 줄바꿈)"></textarea>
+      <button id="send" class="primary">전송</button>
+      <button id="stop" disabled>중단</button>
+    </div>
+    <p class="meta">전송 흐름: <code>POST /v1/sessions/{id}/messages</code> → <code>GET /v1/sessions/{id}/stream</code></p>
+  </main>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const chat = $('chat'), logBox = $('log');
+let aborter = null, sending = false, aiEl = null, thinkEl = null;
+
+/* ---------- 유틸 ---------- */
+function log(line, cls) {
+  const d = document.createElement('div');
+  d.textContent = line;
+  if (cls) d.style.color = cls;
+  logBox.appendChild(d);
+  logBox.scrollTop = logBox.scrollHeight;
+  while (logBox.children.length > 200) logBox.removeChild(logBox.firstChild);
+}
+function addMsg(role, text) {
+  const el = document.createElement('div');
+  el.className = 'm ' + role;
+  el.textContent = text || '';
+  chat.appendChild(el);
+  chat.scrollTop = chat.scrollHeight;
+  return el;
+}
+function base() { return $('base').value.trim().replace(/\/+$/, ''); }
+function headers(jsonBody) {
+  const h = {};
+  if (jsonBody) h['Content-Type'] = 'application/json';
+  const t = $('token').value.trim().replace(/^Bearer\s+/i, '');
+  const hub = $('hubid').value.trim();
+  if (t) h.Authorization = 'Bearer ' + t;
+  if (hub) h.Hubid = hub;
+  return h;
+}
+function unwrap(d) { return (d && typeof d === 'object' && 'data' in d) ? d.data : d; }
+
+/* ---------- 네트워크 (재시도 3회 + 지수 백오프) ---------- */
+async function req(method, path, body, opts = {}) {
+  const url = base() + path;
+  const tries = opts.retries ?? 3;
+  const timeoutMs = opts.timeoutMs ?? 40000;
+  let lastErr;
+  for (let i = 0; i < tries; i++) {
+    try {
+      log(`${method} ${path}${i ? ` (재시도 ${i})` : ''}`);
+      const sigs = [AbortSignal.timeout(timeoutMs)];
+      if (opts.signal) sigs.push(opts.signal);
+      const r = await fetch(url, {
+        method,
+        headers: headers(!!body),
+        body: body ? JSON.stringify(body) : undefined,
+        signal: sigs.length > 1 && AbortSignal.any ? AbortSignal.any(sigs) : sigs[0],
+      });
+      const text = await r.text();
+      if (!r.ok) {
+        log(`  ← HTTP ${r.status} ${text.slice(0, 160)}`, '#b3261e');
+        if (r.status >= 400 && r.status < 500) return { ok: false, status: r.status, text };
+        lastErr = new Error(`HTTP ${r.status} ${text.slice(0, 200)}`);
+      } else {
+        log(`  ← HTTP ${r.status} ${text.slice(0, 120)}`);
+        let data = null;
+        try { data = text ? JSON.parse(text) : null; } catch { data = text; }
+        return { ok: true, status: r.status, data, text };
+      }
+    } catch (e) {
+      lastErr = e;
+      log(`  ← ${e.name || 'ERR'} ${e.message}`, '#b3261e');
+    }
+    await new Promise((res) => setTimeout(res, 500 * Math.pow(2, i)));
+  }
+  throw lastErr || new Error('요청 실패');
+}
+
+/* ---------- 연결 테스트 / 세션 ---------- */
+async function testConn() {
+  $('conn').textContent = '확인 중…';
+  try {
+    const r = await req('GET', '/agent-work-api/v1/sessions?page=1&page_size=1');
+    const t = String(r.text || '');
+    if (r.status === 401 || r.status === 403 || t.includes('请配置实例') || t.includes('请先登录')) {
+      $('conn').textContent = `인증 필요 (HTTP ${r.status}) — access_token을 입력하거나 프록시 토큰 파일을 설정하세요`;
+    } else if (r.ok) $('conn').textContent = '연결 OK (sessions 응답 수신)';
+    else $('conn').textContent = `HTTP ${r.status}`;
+    log('연결 테스트 응답: ' + String(r.text).slice(0, 300));
+  } catch (e) {
+    $('conn').textContent = '연결 실패: ' + e.message;
+  }
+}
+
+async function loadSessions() {
+  const r = await req('GET', '/agent-work-api/v1/sessions?page=1&page_size=30');
+  if (!r.ok) return addMsg('err', `세션 목록 실패 (HTTP ${r.status}): ${String(r.text).slice(0, 300)}`);
+  const d = unwrap(r.data) || {};
+  const list = d.list || d.items || d.data || (Array.isArray(d) ? d : []);
+  const box = $('sessions');
+  box.textContent = '';
+  if (!list.length) { box.appendChild(Object.assign(document.createElement('div'), { textContent: '세션 없음' })); 
+    log('세션 응답 원문: ' + JSON.stringify(d).slice(0, 400)); return; }
+  list.forEach((s) => {
+    const id = s.session_id || s.id || s.sessionId || s.hash_id;
+    const el = document.createElement('div');
+    el.textContent = `${id}  ${s.title || s.name || ''}`.slice(0, 70);
+    el.onclick = () => {
+      [...box.children].forEach((c) => c.classList.remove('on'));
+      el.classList.add('on');
+      $('sessionId').value = id;
+      addMsg('sys', `세션 선택: ${id}`);
+    };
+    box.appendChild(el);
+  });
+  log(`세션 ${list.length}건 로드`);
+}
+
+async function loadHistory() {
+  const sid = $('sessionId').value.trim();
+  if (!sid) return addMsg('err', 'Session ID가 없습니다.');
+  const r = await req('GET', `/agent-work-api/v1/sessions/${encodeURIComponent(sid)}/messages?page=1&page_size=20`);
+  if (!r.ok) return addMsg('err', `이력 실패 (HTTP ${r.status}): ${String(r.text).slice(0, 300)}`);
+  const d = unwrap(r.data) || {};
+  const list = d.list || d.items || d.data || (Array.isArray(d) ? d : []);
+  if (!list.length) return addMsg('sys', '이력 응답 원문: ' + JSON.stringify(d).slice(0, 400));
+  list.forEach((m) => {
+    const role = (m.role === 'user' || m.sender === 'user') ? 'user' : 'ai';
+    addMsg(role, typeof m.content === 'string' ? m.content : JSON.stringify(m.content).slice(0, 800));
+  });
+  log(`이력 ${list.length}건 로드`);
+}
+
+/* ---------- SSE ---------- */
+function parseFrame(f) {
+  let ev = '', data = '', id = '';
+  for (const line of f.split('\n')) {
+    if (line.startsWith('event:')) ev = line.slice(6).trim();
+    else if (line.startsWith('data:')) data += (data ? '\n' : '') + line.slice(5).replace(/^\s/, '');
+    else if (line.startsWith('id:')) id = line.slice(3).trim();
+  }
+  return { ev, data, id };
+}
+function appendThink(t) {
+  if (!t) return;
+  if (!thinkEl) {
+    thinkEl = document.createElement('details');
+    const sum = document.createElement('summary');
+    sum.textContent = 'thinking';
+    thinkEl.appendChild(sum);
+    const pre = document.createElement('div');
+    pre.className = 'tools'; pre.style.whiteSpace = 'pre-wrap';
+    thinkEl.appendChild(pre);
+    thinkEl._pre = pre;
+    chat.insertBefore(thinkEl, aiEl);
+  }
+  thinkEl._pre.textContent += t;
+  chat.scrollTop = chat.scrollHeight;
+}
+function handleEvent(ev, obj) {
+  const type = ev || obj.type || 'chunk';
+  const text = obj.content ?? obj.text ?? '';
+  if (type === 'chunk') {
+    if (obj.source === 'thinking') appendThink(text);
+    else aiEl.textContent += text;
+  } else if (type === 'tool_call') {
+    const line = `\n[tool_call] ${obj.name || ''} ${JSON.stringify(obj.arguments || {}).slice(0, 300)}`;
+    (obj.source === 'thinking' ? appendThink : (t) => (aiEl.textContent += t))(line + '\n');
+  } else if (type === 'tool_result') {
+    aiEl.textContent += `\n[tool_result] ${String(obj.content ?? '').slice(0, 500)}\n`;
+  } else if (type === 'knowledge_search') {
+    const refs = (obj.knowledge_refs || []).map((k) => k.name || k.doc_id).join(', ');
+    if (refs) aiEl.textContent += `\n[knowledge] ${refs}\n`;
+  } else if (type === 'message_start') {
+    if (obj.message_id) log(`message_id=${obj.message_id}`);
+  } else if (type === 'message_end') {
+    const u = obj.metadata || {};
+    if (u.token_usage || u.ttfb_ms) {
+      aiEl.textContent += `\n\n— tokens: ${JSON.stringify(u.token_usage || {})} ttft: ${u.ttft_ms || '-'}ms`;
+    }
+    return 'end';
+  } else if (type === 'message_error') {
+    throw new Error(obj.error || obj.message || 'message_error');
+  }
+  chat.scrollTop = chat.scrollHeight;
+  return '';
+}
+
+async function stream(sid) {
+  const t = $('token').value.trim().replace(/^Bearer\s+/i, '');
+  const url = `${base()}/agent-work-api/v1/sessions/${encodeURIComponent(sid)}/stream?token=${encodeURIComponent(t)}`;
+  log('GET /v1/sessions/' + sid + '/stream (SSE)');
+  const r = await fetch(url, {
+    headers: { Accept: 'text/event-stream', ...headers(false) },
+    signal: aborter.signal,
+  });
+  if (!r.ok || !r.body) throw new Error(`SSE 연결 실패: HTTP ${r.status} ${(await r.text()).slice(0, 200)}`);
+  const reader = r.body.getReader();
+  const dec = new TextDecoder('utf-8');
+  let buf = '', got = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+    let i;
+    while ((i = buf.indexOf('\n\n')) !== -1) {
+      const frame = buf.slice(0, i); buf = buf.slice(i + 2);
+      if (!frame.trim()) continue;
+      const { ev, data } = parseFrame(frame);
+      if (!data || data === '[DONE]') continue;
+      let obj;
+      try { obj = JSON.parse(data); } catch { obj = { content: data }; }
+      got++;
+      if (handleEvent(ev, obj) === 'end') return got;
+    }
+  }
+  return got;
+}
+
+/* ---------- 전송 ---------- */
+async function send() {
+  if (sending) return;
+  const sid = $('sessionId').value.trim();
+  const content = $('input').value.trim();
+  if (!sid) return addMsg('err', 'Session ID를 먼저 입력/선택하세요.');
+  if (!content) return;
+  sending = true; $('send').disabled = true; $('stop').disabled = false;
+  $('input').value = '';
+  aborter = new AbortController();
+  addMsg('user', content);
+  aiEl = addMsg('ai', '');
+  thinkEl = null;
+  const deepRaw = $('deep').value;
+  const body = { content, run_mode: $('runMode').value };
+  if (deepRaw !== 'false') body.deep_thinking = deepRaw;
+  try {
+    const r = await req('POST', `/agent-work-api/v1/sessions/${encodeURIComponent(sid)}/messages`, body, { signal: aborter.signal });
+    if (!r.ok) {
+      addMsg('err', `전송 실패 (HTTP ${r.status}): ${String(r.text).slice(0, 400)}`);
+      return;
+    }
+    log('POST 응답: ' + String(r.text).slice(0, 300));
+    const n = await stream(sid);
+    if (!n) addMsg('sys', 'SSE 이벤트 0건 — 스트림이 즉시 종료되었습니다.');
+  } catch (e) {
+    if (e.name !== 'AbortError') addMsg('err', '오류: ' + (e.message || e));
+  } finally {
+    sending = false; $('stop').disabled = true; syncSend(); aborter = null;
+  }
+}
+function syncSend() { $('send').disabled = sending || !$('input').value.trim(); }
+
+/* ---------- 이벤트 ---------- */
+$('send').onclick = send;
+$('stop').onclick = () => aborter && aborter.abort();
+$('input').addEventListener('input', syncSend);
+$('input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+});
+$('test').onclick = testConn;
+$('loadSessions').onclick = loadSessions;
+$('loadHistory').onclick = loadHistory;
+$('saveToken').onclick = () => {
+  localStorage.setItem('csc_ai_token', $('token').value.trim());
+  log('토큰을 브라우저 localStorage(csc_ai_token)에 저장했습니다.');
+};
+$('sessionId').addEventListener('change', loadHistory);
+$('token').value = localStorage.getItem('csc_ai_token') || '';
+$('hubid').value = localStorage.getItem('csc_ai_hubid') || '';
+$('hubid').addEventListener('change', () => localStorage.setItem('csc_ai_hubid', $('hubid').value.trim()));
+syncSend();
+addMsg('sys', '순서: ① 토큰 입력 → ② 세션 목록 불러오기 → ③ 세션 선택 → ④ 메시지 전송 (POST messages 후 SSE stream 자동 연결).');
+</script>
+</body>
+</html>

@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>测试用例 Q/A 格式</title>
+  <style>
+    body { margin:0; background:#f6f8fb; color:#1f2937; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",Arial,sans-serif; line-height:1.65; }
+    main { max-width:980px; margin:32px auto; padding:0 24px 48px; }
+    h1 { margin:0 0 22px; font-size:30px; }
+    .case { background:#fff; border:1px solid #e5e7eb; border-radius:16px; padding:22px 24px; margin:16px 0; box-shadow:0 10px 28px rgba(15,23,42,.06); }
+    h2 { margin:0 0 10px; font-size:20px; color:#111827; }
+    .answer { margin:0 0 14px; color:#14532d; }
+    dl { display:grid; grid-template-columns:140px 1fr; gap:8px 14px; margin:0; }
+    dt { color:#64748b; font-weight:700; }
+    dd { margin:0; }
+    @media print { body { background:#fff; } main { margin:0; max-width:none; } .case { break-inside:avoid; box-shadow:none; } }
+      .source-block { margin:0 0 28px; }
+    .block-title { margin:10px 0 16px; color:#0f172a; }
+    .source { margin:0 0 8px; color:#64748b; font-size:14px; font-weight:700; }
+    .case-summary { background:#f8fafc; border:1px solid #e5e7eb; border-radius:14px; padding:14px 18px; margin:0 0 18px; }
+    .case-summary p { margin:4px 0; }
+    .case-summary ol { margin:8px 0 0; padding-left:24px; }
+    .internal-badge {
+        position: fixed;
+        top: 20px;
+        right: -60px;
+        width: 200px;
+        text-align: center;
+        background: #ffeb3b;
+        color: #d32f2f;
+        font-weight: bold;
+        font-size: 16px;
+        padding: 8px 0;
+        transform: rotate(45deg);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        z-index: 1000;
+        pointer-events: none;
+    }
+    .footer{ text-align: center; margin-top: 1.5rem; color: var(--text-faint); font-size: 0.75rem; }
+</style>
+</head>
+<body>
+  <div class="internal-badge">NTT社内用</div>
+  <main>
+    <h1>测试用例 Q/A 格式</h1>
+    <section class="source-block">
+  <h2 class="block-title">Testcase915.md 实测 Q/A</h2>
+  <div class="case-summary">
+    <p><strong>实测用例数量：</strong>19 个。</p>
+    <p><strong>当前分类：</strong></p>
+    <ol>
+      <li>翻译功能：3 个。</li>
+      <li>统计 Leader / SM：6 个。</li>
+      <li>Jira 工单客户报告：3 个。</li>
+      <li>交接班报告：2 个。</li>
+      <li>结单报告：2 个。</li>
+      <li>知识库查询：2 个。</li>
+      <li>任务会话与知识库联动：1 个。</li>
+    </ol>
+  </div>
+<section class="case source-case">
+  <p class="source">9/2 &#183; EM6846-6 &#183; 中日翻译</p>
+  <h2>Q：【关于机房交换机更换，我方工程师计划在9.12号抵达现场进行更换。】可以翻译成日语吗</h2>
+  <p class="answer"><strong>A：サーバー室のスイッチ交換について、当社のエンジニアが9月12日に現地到着し、交換作業を実施する予定です。<br>说明：第一次翻译中“机房”语义不够准确，复测后按 server room 修正为“サーバー室”。--正确</strong></p>
+</section>
+<section class="case source-case">
+  <p class="source">9/2 &#183; EM6846-6 &#183; 中英翻译</p>
+  <h2>Q：【关于机房交换机更换，我方工程师计划在9.12号抵达现场进行更换。】可以翻译成英语吗</h2>
+  <p class="answer"><strong>A：Regarding the switch replacement in the server room, our engineers are scheduled to arrive on-site on September 12th to carry out the replacement. 关键术语如 server room、switch、replacement、arrive on-site 保持准确。--正确</strong></p>
+</section>
+<section class="case source-case">
+  <p class="source">9/2 &#183; EM5165-14 &#183; 项目统计</p>
+  <h2>Q：这个项目里面当前总共有多少张工单</h2>
+  <p class="answer"><strong>A：EM5165 项目当前总共有 15 张工单。--正确</strong></p>
+</section>
+<section class="case source-case">
+  <p class="source">9/2 &#183; EM5165-14 &#183; 类型统计</p>
+  <h2>Q：按类型统计一下工单数量。</h2>
+  <p class="answer"><strong>A：EM5165 项目按工单类型统计为：变更申请 5 张、工程师处理变更 5 张、故障申报 2 张、工程师远程调查 2 张、邮件 1 张，合计 15 张。变更相关工单共 10 张，占 66.7%。--正确</strong></p>
+</section>
+<section class="case source-case">
+  <p class="source">9/2 &#183; EM5165-14 &#183; 处理时长统计</p>
+  <h2>Q：统计处理时长大于三个小时的工单</h2>
+  <p class="answer"><strong>A：处理时长大于 3 小时的工单最终统计为 6 张：EM5165-2、EM5165-3、EM5165-8、EM5165-9、EM5165-4、EM5165-6。系统先把 EM5165-1 纳入统计，随后识别其实际仅 8 分钟并排除，修正后的结果正确。--正确</strong></p>
+</section>
+<section class="case source-case">
+  <p class="source">9/2 &#183; EM5165-14 &#183; 整体工作时长</p>
+  <h2>Q：统计整体的工作时长</h2>
+  <p class="answer"><strong>A：EM5165 项目整体统计结果显示：工单总数 15 张，已关闭/完成 9 张，占 60%；处理中/未完结 6 张，占 40%。已关闭/完成工单平均处理时长约 6 小时 37 分，未完结工单中 EM5165-2、EM5165-3、EM5165-8 需重点跟进。--正确</strong></p>
+</section>
+</section>
+<section class="case">
+  <h2>Q：为单个工单生成客户报告</h2>
+  <p class="answer"><strong>A：报告对应当前工单，准确概述问题、影响、处理过程和结果；语言适合客户阅读。--正确</strong></p>
+  <dl>
+    <dt>用例编号</dt><dd>TC-01</dd>
+    <dt>功能</dt><dd>Jira工单客户报告</dd>
+    <dt>操作与测试数据</dt><dd>选择一个包含问题描述、处理过程、解决方案和状态的 Jira 工单，生成报告</dd>
+  </dl>
+</section>
+<section class="case">
+  <h2>Q：工单包含内部备注或敏感信息</h2>
+  <p class="answer"><strong>A：客户报告不泄露内部备注、凭据、内部链接等不应对客展示的信息。--正确</strong></p>
+  <dl>
+    <dt>用例编号</dt><dd>TC-02</dd>
+    <dt>功能</dt><dd>Jira工单客户报告</dd>
+    <dt>操作与测试数据</dt><dd>在工单中加入内部备注、内部链接或敏感字段，再生成客户报告</dd>
+  </dl>
+</section>
+<section class="case">
+  <h2>Q：工单信息不完整</h2>
+  <p class="answer"><strong>A：报告明确标注信息缺失或尚未确认，不编造根因和处理结果。--正确</strong></p>
+  <dl>
+    <dt>用例编号</dt><dd>TC-03</dd>
+    <dt>功能</dt><dd>Jira工单客户报告</dd>
+    <dt>操作与测试数据</dt><dd>使用缺少根因或解决方案的工单生成报告</dd>
+  </dl>
+</section>
+<section class="case">
+  <h2>Q：翻译常见工单内容</h2>
+  <p class="answer"><strong>A：译文保留原意、故障术语和语气；无明显漏译或错译。--正确</strong></p>
+  <dl>
+    <dt>用例编号</dt><dd>TC-04</dd>
+    <dt>功能</dt><dd>翻译功能</dd>
+    <dt>操作与测试数据</dt><dd>输入一段中文故障描述，翻译为选择的目标语言</dd>
+  </dl>
+</section>
+<section class="case">
+  <h2>Q：文本含专有名词和技术内容</h2>
+  <p class="answer"><strong>A：编号、命令、日志及专有名词保持准确，不被误译或改写。--正确</strong></p>
+  <dl>
+    <dt>用例编号</dt><dd>TC-05</dd>
+    <dt>功能</dt><dd>翻译功能</dd>
+    <dt>操作与测试数据</dt><dd>输入包含 Jira 编号、资产编号、命令、日志和产品名的文本</dd>
+  </dl>
+</section>
+<section class="case">
+  <h2>Q：空文本或翻译失败</h2>
+  <p class="answer"><strong>A：空文本得到合理提示；服务失败时提示失败原因或可重试，不返回伪造译文。--正确</strong></p>
+  <dl>
+    <dt>用例编号</dt><dd>TC-06</dd>
+    <dt>功能</dt><dd>翻译功能</dd>
+    <dt>操作与测试数据</dt><dd>输入空文本，或模拟翻译服务不可用</dd>
+  </dl>
+</section>
+<section class="case">
+  <h2>Q：汇总当前所有未关闭工单</h2>
+  <p class="answer"><strong>A：统计范围包含当前所有未关闭工单；数量及分类与 Jira 数据一致，并标明统计时间。--正确</strong></p>
+  <dl>
+    <dt>用例编号</dt><dd>TC-07</dd>
+    <dt>功能</dt><dd>Leader统计</dd>
+    <dt>操作与测试数据</dt><dd>准备多个未关闭工单，涵盖不同优先级、负责人和状态，生成汇总</dd>
+  </dl>
+</section>
+<section class="case">
+  <h2>Q：排除已关闭工单</h2>
+  <p class="answer"><strong>A：已关闭工单不计入未关闭数量和摘要；统计口径清晰。--正确</strong></p>
+  <dl>
+    <dt>用例编号</dt><dd>TC-08</dd>
+    <dt>功能</dt><dd>Leader统计</dd>
+    <dt>操作与测试数据</dt><dd>在数据集中加入已关闭工单，再生成未关闭工单总结</dd>
+  </dl>
+</section>
+<section class="case">
+  <h2>Q：当前没有未关闭工单</h2>
+  <p class="answer"><strong>A：显示无未关闭工单或空结果说明；不生成虚假的事项和风险。--正确</strong></p>
+  <dl>
+    <dt>用例编号</dt><dd>TC-09</dd>
+    <dt>功能</dt><dd>Leader统计</dd>
+    <dt>操作与测试数据</dt><dd>将所有工单设为关闭后生成总结</dd>
+  </dl>
+</section>
+<section class="case">
+  <h2>Q：生成单项目月报</h2>
+  <p class="answer"><strong>A：报告项目、月份范围正确；工单数量及状态、优先级等统计与源数据一致。--正确</strong></p>
+  <dl>
+    <dt>用例编号</dt><dd>TC-10</dd>
+    <dt>功能</dt><dd>SM月度项目统计</dd>
+    <dt>操作与测试数据</dt><dd>选择一个项目和月份，准备该月工单数据，生成统计报告</dd>
+  </dl>
+</section>
+<section class="case">
+  <h2>Q：月份边界和无数据月份</h2>
+  <p class="answer"><strong>A：工单按约定的日期字段归属月份；无数据时明确显示，不出现跨月重复或虚构统计。--正确</strong></p>
+  <dl>
+    <dt>用例编号</dt><dd>TC-11</dd>
+    <dt>功能</dt><dd>SM月度项目统计</dd>
+    <dt>操作与测试数据</dt><dd>使用跨月工单，并选择没有工单的月份</dd>
+  </dl>
+</section>
+<section class="case">
+  <h2>Q：生成资产统计</h2>
+  <p class="answer"><strong>A：资产总数及分类统计与资产数据一致；资产范围和统计时间明确。--正确</strong></p>
+  <dl>
+    <dt>用例编号</dt><dd>TC-12</dd>
+    <dt>功能</dt><dd>SM资产统计</dd>
+    <dt>操作与测试数据</dt><dd>选择资产范围，准备不同类型、状态或归属的资产数据</dd>
+  </dl>
+</section>
+<section class="case">
+  <h2>Q：生成常规交接班报告</h2>
+  <p class="answer"><strong>A：报告包含需交接事项、当前进展、责任人、下一步行动和风险；信息便于接班人继续处理。--正确</strong></p>
+  <dl>
+    <dt>用例编号</dt><dd>TC-13</dd>
+    <dt>功能</dt><dd>交接班报告</dd>
+    <dt>操作与测试数据</dt><dd>准备未关闭工单、负责人、处理进度、待办和风险信息，生成交接班报告</dd>
+  </dl>
+</section>
+<section class="case">
+  <h2>Q：验证最终分析价值</h2>
+  <p class="answer"><strong>A：最终分析能指出有数据依据的共性、风险或待验证方向，并区分已确认事实与推测。--正确</strong></p>
+  <dl>
+    <dt>用例编号</dt><dd>TC-14</dd>
+    <dt>功能</dt><dd>交接班报告</dd>
+    <dt>操作与测试数据</dt><dd>准备存在重复故障、关联变更或共性现象的工单，再生成交接班报告</dd>
+  </dl>
+</section>
+<section class="case">
+  <h2>Q：为已解决工单生成结单报告</h2>
+  <p class="answer"><strong>A：报告包含问题概述、影响、根因（如已确认）、处理措施、验证结果和结单状态；内容与工单一致。--正确</strong></p>
+  <dl>
+    <dt>用例编号</dt><dd>TC-15</dd>
+    <dt>功能</dt><dd>结单报告</dd>
+    <dt>操作与测试数据</dt><dd>使用已关闭或已解决的工单生成报告</dd>
+  </dl>
+</section>
+<section class="case">
+  <h2>Q：为未关闭工单尝试生成结单报告</h2>
+  <p class="answer"><strong>A：系统提示工单尚未满足结单条件，或明确标记为草稿/未结案；不得将工单描述为已完成。--正确</strong></p>
+  <dl>
+    <dt>用例编号</dt><dd>TC-16</dd>
+    <dt>功能</dt><dd>结单报告</dd>
+    <dt>操作与测试数据</dt><dd>使用仍在处理中或待客户确认的工单生成报告</dd>
+  </dl>
+</section>
+<section class="case">
+  <h2>Q：查询项目联系人</h2>
+  <p class="answer"><strong>A：返回该项目所有联系人及其角色、职责和联系方式；信息来源明确，不编造不存在的人员。--正确</strong></p>
+  <dl>
+    <dt>用例编号</dt><dd>TC-17</dd>
+    <dt>功能</dt><dd>知识库查询</dd>
+    <dt>操作与测试数据</dt><dd>选择一个已录入联系人信息的项目，提问"这个项目的联系人有哪些？"</dd>
+  </dl>
+</section>
+<section class="case">
+  <h2>Q：查询项目服务的据点</h2>
+  <p class="answer"><strong>A：返回该项目服务的所有据点名称及相关信息（如地址、服务范围）；列表完整且与知识库数据一致。--正确</strong></p>
+  <dl>
+    <dt>用例编号</dt><dd>TC-18</dd>
+    <dt>功能</dt><dd>知识库查询</dd>
+    <dt>操作与测试数据</dt><dd>选择一个已录入据点信息的项目，提问"这个项目服务了哪些据点？"</dd>
+  </dl>
+</section>
+<section class="case">
+  <h2>Q：查询当前工单的通知模板并列出通知对象</h2>
+  <p class="answer"><strong>A：根据当前工单类型和场景匹配到正确的通知模板；列出所有应通知的对象及其邮箱，信息来源可追溯，不遗漏、不捏造。--正确</strong></p>
+  <dl>
+    <dt>用例编号</dt><dd>TC-19</dd>
+    <dt>功能</dt><dd>任务会话与知识库联动</dd>
+    <dt>操作与测试数据</dt><dd>选择一个已关联项目和通知模板的工单，提问"当前工单应该使用什么通知模板，并列出所有通知对象及他们的邮箱"</dd>
+  </dl>
+</section>
+  </main>
+  <p class="footer">Copyright NTT Communications China 2026</p>
+</body>
+</html>
+
+
+
+
+
+

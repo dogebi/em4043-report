@@ -1,0 +1,15 @@
+url: https://csc-ai.natec.cn/work-agent/#/project/4/process/task/20
+concurrency: 20
+duration_seconds_requested: 1800
+duration_seconds_actual: 1800.89
+total_requests: 10390
+http_200: 727
+errors: 9663
+error_rate: 0.930029
+rps: 5.769
+min_ms: 1156.95
+avg_ms: 3465.12
+p50_ms: 2048.53
+p95_ms: 6910.05
+p99_ms: 26828.72
+max_ms: 42742.51

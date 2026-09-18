@@ -1,0 +1,264 @@
+<!-- 현재 세션 API로 간단한 채팅을 테스트하는 단일 HTML 페이지 -->
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CSC AI API Chat Test</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", Arial, sans-serif; background: #f6f8fb; color: #172033; }
+    main { max-width: 980px; margin: 28px auto; padding: 0 20px 32px; }
+    h1 { margin: 0 0 14px; font-size: 26px; }
+    .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; box-shadow: 0 12px 30px rgba(15,23,42,.07); padding: 18px; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 14px; }
+    label { display: grid; gap: 5px; color: #64748b; font-size: 13px; font-weight: 700; }
+    input, select, textarea { width: 100%; border: 1px solid #dbe3ef; border-radius: 10px; padding: 10px 12px; font: inherit; background: #fff; color: #172033; }
+    textarea { min-height: 72px; resize: vertical; }
+    .chat { height: 430px; overflow: auto; border: 1px solid #e5e7eb; border-radius: 14px; background: #f8fafc; padding: 16px; margin: 14px 0; }
+    .msg { max-width: 82%; margin: 0 0 12px; padding: 11px 13px; border-radius: 14px; white-space: pre-wrap; line-height: 1.55; }
+    .user { margin-left: auto; background: #2563eb; color: #fff; }
+    .assistant { margin-right: auto; background: #fff; border: 1px solid #e5e7eb; }
+    .system { max-width: 100%; color: #64748b; background: transparent; border: 1px dashed #cbd5e1; }
+    .thinking-box { max-width: 96%; margin: 0 0 12px; border: 1px solid #dbeafe; background: #eff6ff; border-radius: 14px; overflow: hidden; }
+    .thinking-head { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 13px; border: 0; background: #dbeafe; color: #1e3a8a; font-weight: 800; cursor: pointer; }
+    .thinking-body { display: none; padding: 14px 16px; color: #334155; white-space: pre-wrap; line-height: 1.7; max-height: 360px; overflow: auto; }
+    .thinking-box.open .thinking-body { display: block; }
+    .thinking-box.open { max-width: 100%; }
+    .bar { display: flex; gap: 10px; align-items: stretch; }
+    .bar textarea { flex: 1; min-height: 54px; }
+    button { border: 0; border-radius: 12px; padding: 0 18px; font-weight: 800; background: #111827; color: #fff; cursor: pointer; }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    .stop { background: #dc2626; }
+    .hint { color: #64748b; font-size: 13px; margin: 10px 0 0; }
+    @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } .msg { max-width: 96%; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>CSC AI API Chat Test</h1>
+    <section class="card">
+      <div class="grid">
+        <label>API Base URL
+          <input id="baseUrl" value="http://127.0.0.1:8787" placeholder="http://127.0.0.1:8787">
+        </label>
+        <label>Session ID
+          <input id="sessionId" placeholder="예: 123 또는 세션 hash id">
+        </label>
+        <label>Bearer Token
+          <input id="token" type="password" placeholder="선택. 없으면 cookie credentials 사용">
+        </label>
+        <label>Hubid
+          <input id="hubid" placeholder="선택. 기존 앱에서 쓰는 Hubid가 있으면 입력">
+        </label>
+        
+      </div>
+      <div id="chat" class="chat" aria-live="polite"></div>
+      <div class="bar">
+        <textarea id="input" placeholder="메시지를 입력하세요. Enter 전송, Shift+Enter 줄바꿈."></textarea>
+        <button id="send">发送</button>
+        <button id="stop" class="stop" disabled>停止</button>
+      </div>
+      <p class="hint">로컬 프록시를 통해 기존 세션 API를 호출합니다. 프록시 실행: node api-chat-proxy.mjs. POST /agent-work-api/v1/sessions/{sessionId}/messages 후 GET /agent-work-api/v1/sessions/{sessionId}/stream 을 연결합니다.</p>
+    </section>
+  </main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const chat = $('chat');
+let aborter = null;
+let assistantEl = null;
+let thinkingEl = null;
+let thinkingBodyEl = null;
+let thinkingText = '';
+let sending = false;
+
+function addMessage(role, text) {
+  const el = document.createElement('div');
+  el.className = `msg ${role}`;
+  el.textContent = text || '';
+  chat.appendChild(el);
+  chat.scrollTop = chat.scrollHeight;
+  return el;
+}
+
+function resetThinking() {
+  thinkingEl = null;
+  thinkingBodyEl = null;
+  thinkingText = '';
+}
+
+function appendThinking(text) {
+  if (!text) return;
+  thinkingText += text;
+  if (!thinkingEl) {
+    thinkingEl = document.createElement('div');
+    thinkingEl.className = 'thinking-box';
+    const head = document.createElement('button');
+    head.type = 'button';
+    head.className = 'thinking-head';
+    head.innerHTML = '<span>思考过程</span><span>展开</span>';
+    thinkingBodyEl = document.createElement('div');
+    thinkingBodyEl.className = 'thinking-body';
+    head.addEventListener('click', () => {
+      thinkingEl.classList.toggle('open');
+      head.lastElementChild.textContent = thinkingEl.classList.contains('open') ? '收起' : '展开';
+    });
+    thinkingEl.appendChild(head);
+    thinkingEl.appendChild(thinkingBodyEl);
+    chat.insertBefore(thinkingEl, assistantEl);
+  }
+  thinkingBodyEl.textContent = thinkingText.replace(/\s+/g, ' ').trim();
+  chat.scrollTop = chat.scrollHeight;
+}
+function routeChunk(text) {
+  if (!text) return;
+  if (/\[thinking\]/.test(text)) {
+    appendThinking(text.replace(/\[thinking\]\s*/g, ''));
+    return;
+  }
+  assistantEl.textContent += text;
+  const marker = assistantEl.textContent.indexOf('[thinking]');
+  if (marker !== -1) {
+    const normal = assistantEl.textContent.slice(0, marker).trimEnd();
+    const thinking = assistantEl.textContent.slice(marker).replace(/\[thinking\]\s*/g, '');
+    assistantEl.textContent = normal;
+    appendThinking(thinking);
+  }
+}
+
+function isHeaderSafe(value) {
+  return /^[\x00-\xff]*$/.test(value);
+}
+
+function headers(json = false) {
+  const h = {};
+  if (json) h['Content-Type'] = 'application/json';
+  const rawToken = $('token').value.trim();
+  const token = rawToken.replace(/^Bearer\s+/i, '').trim();
+  const hubid = $('hubid').value.trim();
+  if (token && isHeaderSafe(token)) h.Authorization = `Bearer ${token}`;
+  if (hubid && isHeaderSafe(hubid)) h.Hubid = hubid;
+  return h;
+}
+
+function unwrap(data) {
+  if (data && typeof data === 'object' && 'data' in data) return data.data;
+  return data;
+}
+
+async function postMessage(sessionId, content) {
+  const body = { content };
+  const url = `${$('baseUrl').value.replace(/\/$/, '')}/agent-work-api/v1/sessions/${encodeURIComponent(sessionId)}/messages`;
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: headers(true),
+    credentials: 'include',
+    body: JSON.stringify(body)
+  });
+  const text = await resp.text();
+  let data = null;
+  try { data = text ? JSON.parse(text) : null; } catch { data = text; }
+  if (!resp.ok) throw new Error(typeof data === 'string' ? data : JSON.stringify(data));
+  return unwrap(data);
+}
+
+function parseSseFrame(frame) {
+  const event = frame.split('\n').find((l) => l.startsWith('event:'))?.slice(6).trim();
+  const data = frame.split('\n').filter((l) => l.startsWith('data:')).map((l) => l.slice(5).replace(/^\s/, '')).join('\n');
+  if (!data || data === '[DONE]') return { type: 'done' };
+  try { return { event, data: JSON.parse(data) }; } catch { return { event, data: { type: event || 'chunk', content: data, text: data } }; }
+}
+
+async function stream(sessionId) {
+  const url = `${$('baseUrl').value.replace(/\/$/, '')}/agent-work-api/v1/sessions/${encodeURIComponent(sessionId)}/stream`;
+  const resp = await fetch(url, {
+    method: 'GET',
+    headers: { Accept: 'text/event-stream', ...headers(false) },
+    credentials: 'include',
+    signal: aborter.signal
+  });
+  if (!resp.ok || !resp.body) throw new Error(`SSE 연결 실패: ${resp.status}`);
+  const reader = resp.body.getReader();
+  const decoder = new TextDecoder('utf-8');
+  let buffer = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    let sep = buffer.indexOf('\n\n');
+    while (sep !== -1) {
+      const frame = buffer.slice(0, sep);
+      buffer = buffer.slice(sep + 2);
+      const parsed = parseSseFrame(frame);
+      const data = parsed.data || {};
+      const type = data.type || parsed.event;
+      if (type === 'chunk') routeChunk(data.text || data.content || '');
+      else if (type === 'thinking') assistantEl.textContent += data.content ? `\n[thinking] ${data.content}` : '';
+      else if (type === 'message_error') throw new Error(data.error || data.message || 'message_error');
+      else if (type === 'message_end' || parsed.type === 'done') return;
+      chat.scrollTop = chat.scrollHeight;
+      sep = buffer.indexOf('\n\n');
+    }
+  }
+}
+
+function hasSendableContent() {
+  const content = $('input').value.trim();
+  return Boolean(content && content !== '*');
+}
+
+function syncSendButton() {
+  $('send').disabled = sending || !hasSendableContent();
+}
+
+async function send() {
+  if (sending) return;
+  const sessionId = $('sessionId').value.trim();
+  const content = $('input').value.trim();
+  if (!sessionId) return addMessage('system', 'Session ID를 입력하세요.');
+  if (!content) return syncSendButton();
+  if (content === '*') return addMessage('system', '메시지 내용이 없어서 전송하지 않았습니다.');
+  sending = true;
+  $('input').value = '';
+  syncSendButton();
+  $('stop').disabled = false;
+  aborter = new AbortController();
+  addMessage('user', content);
+  resetThinking();
+  assistantEl = addMessage('assistant', '');
+  try {
+    await postMessage(sessionId, content);
+    await stream(sessionId);
+  } catch (err) {
+    if (err?.name !== 'AbortError') addMessage('system', `오류: ${err.message || err}`);
+  } finally {
+    sending = false;
+    syncSendButton();
+    $('stop').disabled = true;
+    aborter = null;
+  }
+}
+
+$('send').addEventListener('click', send);
+$('stop').addEventListener('click', () => aborter?.abort());
+$('input').addEventListener('input', syncSendButton);
+$('input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    send();
+  }
+});
+syncSendButton();
+
+addMessage('system', 'API Base URL, Session ID, 필요 시 Bearer Token/Hubid를 입력한 뒤 메시지를 보내세요. 요청 body는 { content }만 전송합니다.');
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
