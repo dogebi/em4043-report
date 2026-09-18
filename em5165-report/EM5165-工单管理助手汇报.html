@@ -1,0 +1,776 @@
+<!-- EM5165 프로젝트 티켓 관리 도우미의 경영진 보고서 -->
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="基于 EM5165 实际测试记录的工单管理助手四类用户场景汇报报告。">
+  <title>EM5165 工单管理助手 | 四类用户场景汇报</title>
+  <style>
+    :root {
+      --ink: #17212b;
+      --ink-soft: #52606d;
+      --muted: #71808d;
+      --paper: #f3f6f8;
+      --card: #ffffff;
+      --line: #dce4e9;
+      --accent: #0b6e69;
+      --accent-dark: #07524f;
+      --accent-pale: #e0f2ef;
+      --warning: #a45f14;
+      --warning-pale: #fff1dc;
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: "Segoe UI", "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+      line-height: 1.65;
+    }
+    a { color: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    :focus-visible { outline: 3px solid #f5a623; outline-offset: 3px; }
+
+    .skip-link {
+      position: absolute;
+      left: 16px;
+      top: -48px;
+      z-index: 10;
+      padding: 10px 14px;
+      background: var(--ink);
+      color: white;
+      border-radius: 8px;
+    }
+    .skip-link:focus { top: 16px; }
+
+    .topbar {
+      background: var(--ink);
+      color: #e8eff2;
+      border-bottom: 1px solid rgba(255,255,255,.12);
+    }
+    .topbar-inner, main, footer {
+      width: min(1180px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+    .topbar-inner {
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      font-size: 13px;
+    }
+    .topbar-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #b9cccf;
+      font-weight: 700;
+    }
+    .topbar-label::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #70d3c6;
+    }
+    .topbar-note { color: #9db0b8; }
+
+    .hero {
+      background: var(--ink);
+      color: white;
+      padding: 68px 0 72px;
+    }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(280px, .8fr);
+      gap: 64px;
+      align-items: end;
+    }
+    .eyebrow {
+      margin: 0 0 18px;
+      color: #72d6c9;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 {
+      max-width: 720px;
+      margin-bottom: 20px;
+      font-size: clamp(38px, 6vw, 72px);
+      line-height: 1.04;
+      letter-spacing: -.055em;
+    }
+    .hero-lede {
+      max-width: 700px;
+      margin-bottom: 0;
+      color: #b8c7ce;
+      font-size: 18px;
+      line-height: 1.7;
+    }
+    .hero-signal {
+      border-left: 2px solid #5fc8bd;
+      padding-left: 24px;
+    }
+    .hero-signal strong {
+      display: block;
+      margin-bottom: 8px;
+      color: #ffffff;
+      font-size: 18px;
+    }
+    .hero-signal p {
+      margin: 0;
+      color: #a9bbc2;
+      font-size: 14px;
+    }
+    .hero-signal .source {
+      margin-top: 24px;
+      color: #72d6c9;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .nav-wrap {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: rgba(243,246,248,.94);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(12px);
+    }
+    .nav {
+      width: min(1180px, calc(100% - 40px));
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .nav::-webkit-scrollbar { display: none; }
+    .nav a {
+      flex: 0 0 auto;
+      padding: 14px 15px;
+      color: var(--ink-soft);
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .nav a:hover { color: var(--accent); }
+    .print-button {
+      margin-left: auto;
+      padding: 7px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+      color: var(--ink);
+      font: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .print-button:active { transform: translateY(1px); }
+
+    main { padding: 56px 0 86px; }
+    section { scroll-margin-top: 72px; }
+    .section-heading {
+      display: grid;
+      grid-template-columns: minmax(180px, .34fr) minmax(0, 1fr);
+      gap: 32px;
+      margin-bottom: 26px;
+    }
+    .section-heading .label {
+      margin: 5px 0 0;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .section-heading h2 {
+      margin-bottom: 8px;
+      font-size: clamp(26px, 3vw, 38px);
+      line-height: 1.18;
+      letter-spacing: -.035em;
+    }
+    .section-heading p {
+      max-width: 700px;
+      margin-bottom: 0;
+      color: var(--ink-soft);
+    }
+
+    .summary-panel {
+      display: grid;
+      grid-template-columns: 1.3fr .7fr;
+      gap: 28px;
+      padding: 30px;
+      background: var(--accent-dark);
+      color: white;
+      border-radius: var(--radius);
+    }
+    .summary-panel blockquote {
+      margin: 0;
+      font-size: clamp(22px, 3vw, 34px);
+      line-height: 1.3;
+      letter-spacing: -.03em;
+    }
+    .summary-panel aside {
+      padding-left: 24px;
+      border-left: 1px solid rgba(255,255,255,.28);
+      color: #c7dedc;
+      font-size: 14px;
+    }
+    .summary-panel aside p { margin: 0 0 8px; }
+    .summary-panel aside p:last-child { margin-bottom: 0; }
+
+    .metric-band {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      margin: 32px 0 0;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+    .metric {
+      min-height: 132px;
+      padding: 22px 20px 20px 0;
+      margin-right: 20px;
+      border-right: 1px solid var(--line);
+    }
+    .metric:last-child { border-right: 0; margin-right: 0; }
+    .metric-value {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--accent-dark);
+      font-size: clamp(28px, 3vw, 40px);
+      font-weight: 800;
+      letter-spacing: -.05em;
+      line-height: 1;
+    }
+    .metric-label { color: var(--ink-soft); font-size: 13px; }
+
+    .insight-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-top: 24px;
+    }
+    .insight {
+      padding: 22px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+    .insight strong { display: block; margin-bottom: 8px; font-size: 17px; }
+    .insight p { margin-bottom: 0; color: var(--ink-soft); font-size: 14px; }
+
+    .scenarios { margin-top: 96px; }
+    .scenario-list { display: grid; gap: 22px; }
+    .scenario {
+      padding: 30px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+    .scenario-head {
+      display: grid;
+      grid-template-columns: 130px minmax(0, 1fr) auto;
+      gap: 20px;
+      align-items: start;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--line);
+    }
+    .scenario-code {
+      color: var(--accent);
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+    .scenario h3 { margin-bottom: 5px; font-size: 25px; letter-spacing: -.03em; }
+    .scenario-role { margin: 0; color: var(--ink-soft); font-size: 14px; }
+    .role-tag {
+      display: inline-block;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: var(--accent-pale);
+      color: var(--accent-dark);
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .scenario-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      padding: 24px 0;
+    }
+    .scenario-grid h4, .evidence h4 {
+      margin: 0 0 10px;
+      font-size: 14px;
+    }
+    .scenario-grid h4 { color: var(--ink-soft); }
+    .scenario-grid ul { margin: 0; padding-left: 20px; color: var(--ink-soft); font-size: 14px; }
+    .scenario-grid li { margin: 5px 0; }
+    .assistant-list { color: var(--ink) !important; }
+    .evidence {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(240px, .7fr);
+      gap: 26px;
+      padding-top: 22px;
+      border-top: 1px solid var(--line);
+    }
+    .evidence h4 { color: var(--accent-dark); }
+    .evidence p { margin: 0; color: var(--ink-soft); font-size: 14px; }
+    .prompt {
+      padding: 16px 18px;
+      background: #f1f5f6;
+      border-left: 3px solid var(--accent);
+      color: var(--ink);
+      font-size: 14px;
+    }
+    .prompt strong { display: block; margin-bottom: 5px; font-size: 12px; color: var(--accent-dark); }
+
+    .management { margin-top: 96px; }
+    .management-grid {
+      display: grid;
+      grid-template-columns: minmax(0, .9fr) minmax(320px, 1.1fr);
+      gap: 22px;
+      align-items: start;
+    }
+    .data-card, .risk-card, .measurement-card {
+      padding: 26px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+    .data-card h3, .risk-card h3, .measurement-card h3 { margin-bottom: 18px; font-size: 20px; letter-spacing: -.025em; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .data-table th, .data-table td { padding: 11px 0; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    .data-table tr:last-child th, .data-table tr:last-child td { border-bottom: 0; }
+    .data-table th { width: 55%; color: var(--ink-soft); font-weight: 600; }
+    .data-table td { color: var(--ink); font-weight: 800; }
+    .risk-card { background: var(--warning-pale); border-color: #efd7b6; }
+    .risk-card h3 { color: #78430e; }
+    .risk-list { display: grid; gap: 13px; margin: 0; padding: 0; list-style: none; }
+    .risk-list li { display: grid; grid-template-columns: 92px 1fr; gap: 12px; padding-bottom: 13px; border-bottom: 1px solid #efd7b6; font-size: 14px; }
+    .risk-list li:last-child { padding-bottom: 0; border-bottom: 0; }
+    .risk-list strong { color: #78430e; }
+    .risk-list span { color: #6d5437; }
+
+    .comparison { margin-top: 22px; }
+    .comparison-table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; font-size: 14px; }
+    .comparison-table th, .comparison-table td { padding: 15px 18px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    .comparison-table th { background: #e8eef1; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; }
+    .comparison-table tr:last-child td { border-bottom: 0; }
+    .comparison-table td:first-child { width: 17%; color: var(--accent-dark); font-weight: 800; }
+
+    .next-step { margin-top: 96px; }
+    .measurement-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .measurement-card { position: relative; padding-top: 58px; }
+    .measurement-number { position: absolute; top: 22px; left: 26px; color: var(--accent); font-size: 13px; font-weight: 800; letter-spacing: .08em; }
+    .measurement-card p { margin-bottom: 0; color: var(--ink-soft); font-size: 14px; }
+    .final-note { margin-top: 24px; padding: 24px 28px; border-left: 4px solid var(--accent); background: var(--card); color: var(--ink-soft); }
+    .final-note strong { color: var(--ink); }
+
+    footer {
+      padding: 24px 0 44px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    footer p { margin: 0; }
+
+    @media (max-width: 900px) {
+      .hero-grid, .summary-panel, .management-grid { grid-template-columns: 1fr; gap: 28px; }
+      .summary-panel aside { padding: 18px 0 0; border-top: 1px solid rgba(255,255,255,.28); border-left: 0; }
+      .metric-band { grid-template-columns: repeat(3, 1fr); }
+      .metric:nth-child(3) { border-right: 0; }
+      .metric:nth-child(n+4) { border-top: 1px solid var(--line); }
+      .metric:nth-child(4) { border-right: 1px solid var(--line); }
+      .section-heading { grid-template-columns: 1fr; gap: 8px; }
+    }
+    @media (max-width: 680px) {
+      .topbar-inner, main, footer, .nav { width: min(100% - 28px, 1180px); }
+      .topbar-inner { min-height: 44px; }
+      .topbar-note { display: none; }
+      .hero { padding: 46px 0 54px; }
+      .hero-grid { gap: 38px; }
+      .hero-lede { font-size: 16px; }
+      main { padding-top: 38px; }
+      .metric-band { grid-template-columns: repeat(2, 1fr); }
+      .metric { min-height: 110px; }
+      .metric:nth-child(3) { border-right: 1px solid var(--line); }
+      .metric:nth-child(4) { border-right: 0; }
+      .metric:nth-child(n+3) { border-top: 1px solid var(--line); }
+      .insight-grid, .measurement-grid, .scenario-grid { grid-template-columns: 1fr; }
+      .scenario, .data-card, .risk-card, .measurement-card { padding: 22px; }
+      .scenario-head { grid-template-columns: 1fr auto; gap: 10px; }
+      .scenario-code { grid-column: 1 / -1; }
+      .scenario h3 { font-size: 22px; }
+      .evidence { grid-template-columns: 1fr; }
+      .comparison-table { display: block; overflow-x: auto; white-space: normal; }
+      .comparison-table th, .comparison-table td { min-width: 180px; }
+      .comparison-table td:first-child { min-width: 110px; }
+      .print-button { display: none; }
+    }
+    @media print {
+      @page { margin: 14mm; }
+      html { scroll-behavior: auto; }
+      body { background: white; }
+      .topbar, .nav-wrap, .print-button { display: none !important; }
+      .hero { padding: 30px 0 34px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      main { width: 100%; padding: 30px 0; }
+      .scenario, .data-card, .risk-card, .measurement-card, .insight, .final-note { break-inside: avoid; box-shadow: none; }
+      .scenarios, .management, .next-step { margin-top: 46px; }
+      footer { width: 100%; padding-bottom: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳转到报告正文</a>
+
+  <div class="topbar">
+    <div class="topbar-inner">
+      <span class="topbar-label">工单管理助手 / 管理层汇报</span>
+      <span class="topbar-note">数据基于 EM5165 项目实际测试记录</span>
+    </div>
+  </div>
+
+  <header class="hero">
+    <div class="topbar-inner hero-grid">
+      <div>
+        <p class="eyebrow">EM5165 · Executive Brief</p>
+        <h1>把分散的工单信息，变成可执行的管理判断。</h1>
+        <p class="hero-lede">围绕 T1、T2、Admin、SM 四类用户，展示工单管理助手如何从查询、分析、统计延伸到客户月报。</p>
+      </div>
+      <aside class="hero-signal">
+        <strong>一份数据，四种工作结果。</strong>
+        <p>从客户可读的处理进展，到技术可执行的排查方案，再到管理统计和月报初稿。</p>
+        <p class="source">实测样本：15 张 EM5165 工单</p>
+      </aside>
+    </div>
+  </header>
+
+  <div class="nav-wrap">
+    <nav class="nav" aria-label="报告导航">
+      <a href="#overview">结论摘要</a>
+      <a href="#scenarios">四类场景</a>
+      <a href="#management">管理视角</a>
+      <a href="#comparison">价值对比</a>
+      <a href="#next-step">下一步指标</a>
+      <button class="print-button" type="button" onclick="window.print()">打印 / 导出 PDF</button>
+    </nav>
+  </div>
+
+  <main id="main-content">
+    <section id="overview" aria-labelledby="overview-title">
+      <div class="section-heading">
+        <p class="label">Executive brief</p>
+        <div>
+          <h2 id="overview-title">先看结论</h2>
+          <p>EM5165 的实测数据已经足以说明，工单助手的核心价值在于统一信息口径，并把信息整理成下一步行动。</p>
+        </div>
+      </div>
+
+      <div class="summary-panel">
+        <blockquote>工单管理助手不是简单替代人工查询，而是把工单、知识库、历史经验和人员记忆，统一转换为可执行的分析结果。</blockquote>
+        <aside>
+          <p><strong>当前能证明的能力</strong></p>
+          <p>能够快速回答总量、类型、处理时长、长期未解决事项等问题，并生成面向不同角色的结构化结果。</p>
+        </aside>
+      </div>
+
+      <div class="metric-band" aria-label="EM5165 核心指标">
+        <div class="metric"><span class="metric-value">15</span><span class="metric-label">项目工单总数</span></div>
+        <div class="metric"><span class="metric-value">9</span><span class="metric-label">已关闭或已完成</span></div>
+        <div class="metric"><span class="metric-value">60%</span><span class="metric-label">完成率</span></div>
+        <div class="metric"><span class="metric-value">6</span><span class="metric-label">处理中或未完结</span></div>
+        <div class="metric"><span class="metric-value">10</span><span class="metric-label">变更相关工单</span></div>
+        <div class="metric"><span class="metric-value">93h</span><span class="metric-label">未完结累计占用时长</span></div>
+      </div>
+
+      <div class="insight-grid">
+        <article class="insight">
+          <strong>信息汇总已经可见</strong>
+          <p>15 张工单中，9 张已关闭或完成，6 张仍需跟进，管理人员无需先跨系统拼接全局状态。</p>
+        </article>
+        <article class="insight">
+          <strong>关联分析是重点增量</strong>
+          <p>10 张工单与变更相关，EM5165-2、3、8、9 适合演示变更、进度和技术风险的联合判断。</p>
+        </article>
+        <article class="insight">
+          <strong>效率收益需要继续计时</strong>
+          <p>当前数据证明了汇总和分析能力，但暂不直接推导人稼动率百分比，需对人工与 AI 流程进行计时对比。</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="scenarios" class="scenarios" aria-labelledby="scenarios-title">
+      <div class="section-heading">
+        <p class="label">Four user scenarios</p>
+        <div>
+          <h2 id="scenarios-title">四类用户，四种结果</h2>
+          <p>同一批工单数据，按照不同角色的工作目标重新组织，直接服务于客户沟通、技术处理和管理决策。</p>
+        </div>
+      </div>
+
+      <div class="scenario-list">
+        <article class="scenario" id="t1">
+          <div class="scenario-head">
+            <div class="scenario-code">T1</div>
+            <div>
+              <h3>客户问题快速定位与反馈</h3>
+              <p class="scenario-role">关注是否及时受理、当前进展、预计方向和最终客户反馈。</p>
+            </div>
+            <span class="role-tag">客户沟通</span>
+          </div>
+          <div class="scenario-grid">
+            <div>
+              <h4>传统人工方式</h4>
+              <ul>
+                <li>在 Jira、历史文档、聊天记录和经验库之间反复查找。</li>
+                <li>人工确认状态、负责人和处理进展。</li>
+                <li>手工整理问题描述、处理过程和客户回复。</li>
+                <li>交接班容易遗漏待办事项和风险信息。</li>
+              </ul>
+            </div>
+            <div>
+              <h4>工单助手输出</h4>
+              <ul class="assistant-list">
+                <li>问题概述与当前影响范围。</li>
+                <li>已完成动作、负责人和工单状态。</li>
+                <li>下一步处理建议和客户可读说明。</li>
+                <li>交接待办与风险提示。</li>
+              </ul>
+            </div>
+          </div>
+          <div class="evidence">
+            <div>
+              <h4>EM5165 实测依据</h4>
+              <p>项目共 15 张工单，已关闭或完成 9 张，占 60%；处理中或未完结 6 张，占 40%。故障申报类工单 2 张，EM5165-10 的监控告警处理时长为 1 小时 26 分钟，EM5165-14 为同类告警且已恢复。</p>
+            </div>
+            <div class="prompt"><strong>演示问题</strong>请查询 EM5165 项目当前未关闭的故障工单，说明影响、当前状态、负责人和下一步处理建议，并生成一份客户可读的处理进展说明。</div>
+          </div>
+        </article>
+
+        <article class="scenario" id="t2">
+          <div class="scenario-head">
+            <div class="scenario-code">T2</div>
+            <div>
+              <h3>技术问题分析与解决方案生成</h3>
+              <p class="scenario-role">关注根因分析、影响范围、历史相似问题和可执行的处理方案。</p>
+            </div>
+            <span class="role-tag">技术处理</span>
+          </div>
+          <div class="scenario-grid">
+            <div>
+              <h4>传统人工方式</h4>
+              <ul>
+                <li>手动检索历史工单、知识库和变更记录。</li>
+                <li>依靠个人经验判断可能根因。</li>
+                <li>人工比对相关设备、资产和近期变更。</li>
+                <li>排查、回滚和验证方案需要单独编写。</li>
+              </ul>
+            </div>
+            <div>
+              <h4>工单助手输出</h4>
+              <ul class="assistant-list">
+                <li>区分故障现象、已确认事实与推测内容。</li>
+                <li>关联历史案例、近期变更和影响范围。</li>
+                <li>生成排查步骤、处理方案和回滚方案。</li>
+                <li>列出变更后的验证项目。</li>
+              </ul>
+            </div>
+          </div>
+          <div class="evidence">
+            <div>
+              <h4>EM5165 实测依据</h4>
+              <p>变更相关工单共有 10 张，占总工单数 66.7%。EM5165-2、3、8、9 分别涉及互联网访问阻止策略、工程师处理变更、黑名单阻止策略和关联工程师处理变更，适合联合分析处理进度与技术风险。</p>
+            </div>
+            <div class="prompt"><strong>演示问题</strong>请分析 EM5165-2、EM5165-3、EM5165-8 和 EM5165-9 的关联关系，区分已确认事实与推测，并输出排查步骤、处理建议和回滚方案。</div>
+          </div>
+        </article>
+
+        <article class="scenario" id="admin">
+          <div class="scenario-head">
+            <div class="scenario-code">Admin</div>
+            <div>
+              <h3>工单统计、人员负载和异常管理</h3>
+              <p class="scenario-role">关注全局运行情况、状态分布、负责人、处理时长和异常事项。</p>
+            </div>
+            <span class="role-tag">全局管理</span>
+          </div>
+          <div class="scenario-grid">
+            <div>
+              <h4>传统人工方式</h4>
+              <ul>
+                <li>找不同负责人询问状态，再手动汇总。</li>
+                <li>导出 Jira 数据后制作统计表。</li>
+                <li>人工识别超时工单和长期未关闭工单。</li>
+                <li>统计结果生成慢，容易出现遗漏或口径不一致。</li>
+              </ul>
+            </div>
+            <div>
+              <h4>工单助手输出</h4>
+              <ul class="assistant-list">
+                <li>直接回答总数、类型、未关闭工单和负责人。</li>
+                <li>筛选处理时间超过 3 小时的工单。</li>
+                <li>识别长期停滞事项和管理介入点。</li>
+                <li>形成每日、每周和月度管理看板的基础。</li>
+              </ul>
+            </div>
+          </div>
+          <div class="evidence">
+            <div>
+              <h4>EM5165 实测依据</h4>
+              <p>处理时间超过 3 小时的工单有 6 张，超过 21 小时仍未解决的工单有 3 张，未完结工单累计占用时长约 93 小时。EM5165-2、3、8 是当前需要重点关注的事项。</p>
+            </div>
+            <div class="prompt"><strong>演示问题</strong>请生成 EM5165 项目当前工单管理报告，包含总数、状态、类型、负责人、超过 3 小时的工单、长期未解决事项和管理建议。</div>
+          </div>
+        </article>
+
+        <article class="scenario" id="sm">
+          <div class="scenario-head">
+            <div class="scenario-code">SM</div>
+            <div>
+              <h3>客户月报、项目统计和管理分析</h3>
+              <p class="scenario-role">关注客户月报、项目趋势、服务质量、工单分类和资源投入情况。</p>
+            </div>
+            <span class="role-tag">客户汇报</span>
+          </div>
+          <div class="scenario-grid">
+            <div>
+              <h4>传统人工方式</h4>
+              <ul>
+                <li>从 Jira 导出数据，再找 T1、T2 和负责人补充情况。</li>
+                <li>手工整理月度统计和处理时长。</li>
+                <li>制作 Word、Excel 和 PPT，反复确认口径。</li>
+                <li>报告制作占用大量时间，数据容易不一致。</li>
+              </ul>
+            </div>
+            <div>
+              <h4>工单助手输出</h4>
+              <ul class="assistant-list">
+                <li>按项目和统计周期生成工单总量及类型分布。</li>
+                <li>输出完成率、平均处理时长和超时工单。</li>
+                <li>提炼重点风险、主要处理人员和管理结论。</li>
+                <li>同时生成管理版与客户可读的月报初稿。</li>
+              </ul>
+            </div>
+          </div>
+          <div class="evidence">
+            <div>
+              <h4>EM5165 实测依据</h4>
+              <p>已关闭或完成工单平均处理时长约 6 小时 37 分钟，未完结工单累计占用时长约 93 小时，目前存在 3 张超过 21 小时仍未解决的工单。这些数据可以直接转化为月报中的服务质量与风险结论。</p>
+            </div>
+            <div class="prompt"><strong>演示问题</strong>请生成 EM5165 项目月度服务报告，包含工单数量、类型分布、完成率、处理时长、长期未解决事项、主要风险和下月改进建议。</div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="management" class="management" aria-labelledby="management-title">
+      <div class="section-heading">
+        <p class="label">Management view</p>
+        <div>
+          <h2 id="management-title">把异常事项放到管理台面上</h2>
+          <p>Admin 和 SM 最需要的不是更多信息，而是统一口径后的重点、风险和下一步。</p>
+        </div>
+      </div>
+
+      <div class="management-grid">
+        <div class="data-card">
+          <h3>EM5165 项目统计口径</h3>
+          <table class="data-table">
+            <tbody>
+              <tr><th>工单总数</th><td>15 张</td></tr>
+              <tr><th>已关闭或已完成</th><td>9 张 / 60%</td></tr>
+              <tr><th>处理中或未完结</th><td>6 张 / 40%</td></tr>
+              <tr><th>变更申请</th><td>5 张</td></tr>
+              <tr><th>工程师处理变更</th><td>5 张</td></tr>
+              <tr><th>故障申报</th><td>2 张</td></tr>
+              <tr><th>工程师远程调查</th><td>2 张</td></tr>
+              <tr><th>邮件</th><td>1 张</td></tr>
+              <tr><th>处理时间超过 3 小时</th><td>6 张</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <aside class="risk-card">
+          <h3>当前优先关注</h3>
+          <ul class="risk-list">
+            <li><strong>EM5165-2</strong><span>超过 28 小时，状态为暂停，需要确认阻塞原因和恢复条件。</span></li>
+            <li><strong>EM5165-3</strong><span>超过 28 小时，处于变更准备中，需要确认下一步执行窗口。</span></li>
+            <li><strong>EM5165-8</strong><span>超过 21 小时，仍在处理中，需要判断是否需要升级或关联变更。</span></li>
+            <li><strong>整体</strong><span>未完结工单累计占用时长约 93 小时，需要持续观察停滞工单和资源投入。</span></li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+
+    <section id="comparison" class="comparison" aria-labelledby="comparison-title">
+      <div class="section-heading">
+        <p class="label">Value shift</p>
+        <div>
+          <h2 id="comparison-title">四类用户的价值变化</h2>
+          <p>价值不在于把每一步都自动化，而在于让每个角色更快得到适合自己工作的结果。</p>
+        </div>
+      </div>
+      <table class="comparison-table">
+        <thead><tr><th>用户</th><th>主要关注点</th><th>传统方式</th><th>工单助手带来的变化</th></tr></thead>
+        <tbody>
+          <tr><td>T1</td><td>快速定位、客户反馈、交接完整</td><td>查资料、问负责人、手工写回复</td><td>自动汇总工单情况并生成客户说明</td></tr>
+          <tr><td>T2</td><td>根因分析、风险判断、解决方案</td><td>依赖经验，手动查文档和历史工单</td><td>综合分析工单、变更、知识库并生成排查方案</td></tr>
+          <tr><td>Admin</td><td>总量、状态、负责人、超时和风险</td><td>手工统计、找人确认</td><td>自动生成全局统计并发现异常</td></tr>
+          <tr><td>SM</td><td>月报、客户汇报、趋势分析</td><td>导出数据并手工制作文档</td><td>自动生成统计结果、管理结论和报告初稿</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="next-step" class="next-step" aria-labelledby="next-step-title">
+      <div class="section-heading">
+        <p class="label">Measurement plan</p>
+        <div>
+          <h2 id="next-step-title">下一步，用计时证明效率收益</h2>
+          <p>当前材料已经证明信息汇总和分析能力，正式的人效结论需要建立人工流程与 AI 流程之间的可比计时。</p>
+        </div>
+      </div>
+      <div class="measurement-grid">
+        <article class="measurement-card">
+          <span class="measurement-number">指标一</span>
+          <h3>初步判断时间</h3>
+          <p>记录单个工单从受理到形成初步判断的时间，比较人工查找和助手输出的差异。</p>
+        </article>
+        <article class="measurement-card">
+          <span class="measurement-number">指标二</span>
+          <h3>月报初稿时间</h3>
+          <p>记录月报从数据准备到形成初稿的时间，关注统计、复核和排版环节的变化。</p>
+        </article>
+        <article class="measurement-card">
+          <span class="measurement-number">指标三</span>
+          <h3>重复确认次数</h3>
+          <p>记录交接班后因信息遗漏产生的重复确认次数，观察信息完整度和交接质量。</p>
+        </article>
+      </div>
+      <div class="final-note"><strong>汇报时建议强调。</strong> 目前可以确认助手能够统一整理和分析工单信息，但不应在没有人工流程计时数据的情况下，直接宣称具体的人稼动率提升百分比。</div>
+    </section>
+  </main>
+
+  <footer>
+    <p>报告口径：EM5165 项目实际测试记录。页面为管理层汇报初稿，不替代 Jira 原始数据和正式月度统计。</p>
+  </footer>
+</body>
+</html>
