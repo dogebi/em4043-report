@@ -349,6 +349,19 @@
       text-underline-offset: 3px;
     }
     .demo-link:hover { color: var(--accent); }
+    .hero-demo { margin-top: 24px; }
+    .demo-frame {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #0f1820;
+    }
+    .demo-frame video {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+    }
 
     .management { margin-top: 96px; }
     .management-grid {
@@ -574,6 +587,14 @@
             </div>
             <div class="prompt"><strong>演示问题</strong>请查询 EM4043 项目当前未关闭的故障工单，说明影响、当前状态、负责人和下一步处理建议，并生成一份客户可读的处理进展说明。<a class="demo-link" href="https://csc-ai.natec.cn/work-agent/yuN2YtXC7mVE?_slug=jira&amp;state=PfJyBV0cl9vYSj3kpHoUYUuVIISdG212eI98v14H#/project/3/process" target="_blank" rel="noopener noreferrer">Demo</a></div>
           </div>
+          <div class="hero-demo">
+            <div class="demo-frame">
+              <video autoplay loop muted playsinline preload="metadata" aria-label="EM4043 T1 Demo">
+                <source src="assets/t1-demo.mp4" type="video/mp4">
+                EM4043 T1 Demo
+              </video>
+            </div>
+          </div>
         </article>
 
         <article class="scenario" id="t2">
@@ -611,6 +632,14 @@
               <p>变更相关工单共有 10 张，占总工单数 66.7%。EM4043-2、3、8、9 分别涉及互联网访问阻止策略、工程师处理变更、黑名单阻止策略和关联工程师处理变更，适合联合分析处理进度与技术风险。</p>
             </div>
             <div class="prompt"><strong>演示问题</strong>请分析 EM4043-2、EM4043-3、EM4043-8 和 EM4043-9 的关联关系，区分已确认事实与推测，并输出排查步骤、处理建议和回滚方案。</div>
+          </div>
+          <div class="hero-demo">
+            <div class="demo-frame">
+              <video autoplay loop muted playsinline preload="metadata" aria-label="EM4043 T2 Demo">
+                <source src="assets/t1-demo.mp4" type="video/mp4">
+                EM4043 T2 Demo
+              </video>
+            </div>
           </div>
         </article>
 
@@ -650,6 +679,14 @@
             </div>
             <div class="prompt"><strong>演示问题</strong>请生成 EM4043 项目当前工单管理报告，包含总数、状态、类型、负责人、超过 3 小时的工单、长期未解决事项和管理建议。</div>
           </div>
+          <div class="hero-demo">
+            <div class="demo-frame">
+              <video autoplay loop muted playsinline preload="metadata" aria-label="EM4043 Admin Demo">
+                <source src="assets/t1-demo.mp4" type="video/mp4">
+                EM4043 Admin Demo
+              </video>
+            </div>
+          </div>
         </article>
 
         <article class="scenario" id="sm">
@@ -687,6 +724,14 @@
               <p>已关闭或完成工单平均处理时长约 6 小时 37 分钟，未完结工单累计占用时长约 93 小时，目前存在 3 张超过 21 小时仍未解决的工单。这些数据可以直接转化为月报中的服务质量与风险结论。</p>
             </div>
             <div class="prompt"><strong>演示问题</strong>请生成 EM4043 项目月度服务报告，包含工单数量、类型分布、完成率、处理时长、长期未解决事项、主要风险和下月改进建议。</div>
+          </div>
+          <div class="hero-demo">
+            <div class="demo-frame">
+              <video autoplay loop muted playsinline preload="metadata" aria-label="EM4043 SM Demo">
+                <source src="assets/t1-demo.mp4" type="video/mp4">
+                EM4043 SM Demo
+              </video>
+            </div>
           </div>
         </article>
       </div>
