@@ -23,3 +23,6 @@
 - 2026-08-13 PERF-001 result: FAIL. 20 HTTP workers ran for 1810.49 seconds, total 3280 requests, 136 HTTP 200, 3144 errors, error rate 95.8537%, P95 11385.88 ms. Most errors were SSL UNEXPECTED_EOF_WHILE_READING.
 
 - 2026-08-13 PERF-001 rerun result: FAIL. 20 HTTP workers ran for 1800.89 seconds, total 10390 requests, 727 HTTP 200, 9663 errors, error rate 93.0029%, P95 6910.05 ms. Dominant error was WinError 10061 connection refused.
+
+- 本次汇报补充参考 `D:\dev\cscAI\skill_Agent.html`，将 Skill 归纳为文档与表格生成、报告生成、工单处理、知识检索与技术分析、自动化与外部工具五类。
+- 知识库摘要采用发布汇报所需的抽象层级，概括为写入、双路检索、结果优化、异步增强和存储分工。

@@ -501,6 +501,7 @@
   <div class="nav-wrap">
     <nav class="nav" aria-label="报告导航">
       <a href="#overview">结论摘要</a>
+      <a href="#architecture">设计与架构</a>
       <a href="#business-scenarios">业务场景</a>
       <a href="#scenarios">四类场景</a>
       <a href="#management">管理视角</a>
@@ -549,6 +550,59 @@
           <strong>效率收益需要继续计时</strong>
           <p>当前数据证明了汇总和分析能力，但暂不直接推导人稼动率百分比，需对人工与 AI 流程进行计时对比。</p>
         </article>
+      </div>
+    </section>
+
+    <section id="architecture" class="management" aria-labelledby="architecture-title">
+      <div class="section-heading">
+        <p class="label">Design & architecture</p>
+        <div>
+          <h2 id="architecture-title">设计目标、知识库与 Skill 能力</h2>
+          <p>从“查询工具”升级为能够理解项目、调用知识和工具、协同完成工单的 Agent。</p>
+        </div>
+      </div>
+
+      <div class="management-grid">
+        <div class="data-card">
+          <h3>1. 设计目标（对比）</h3>
+          <table class="data-table business-table">
+            <thead><tr><th>传统方式</th><th>工单管理助手目标</th></tr></thead>
+            <tbody>
+              <tr><td>按固定流程执行，遇到复杂问题需要人工判断。</td><td>以 Agent 为主，理解项目、工单和技术上下文，与人对话并共同完成工单。</td></tr>
+              <tr><td>人工跨系统查找、整理和确认数据。</td><td>自动识别不同格式的数据，整理、归类并沉淀到知识库。</td></tr>
+              <tr><td>结果依赖个人经验，难以持续复用。</td><td>结合工单、资产、历史案例、知识库和监控信息，输出可验证的分析结果。</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="data-card">
+          <h3>2. 知识库数据流摘要</h3>
+          <ul class="workflow-list">
+            <li><strong>写入路径：</strong>文件上传后进行切片、规范化和内容抽取，同时生成 Embedding，并写入 Qdrant 向量库。</li>
+            <li><strong>双路检索：</strong>查询同时进行语义向量检索和 BM25 关键词检索，再合并结果。</li>
+            <li><strong>结果优化：</strong>经过加权融合、阈值过滤、Reranker 和 LLM 精排，返回 Top-K 结果。</li>
+            <li><strong>异步增强：</strong>由 Enrichment Worker 生成问题、关键词、标签和摘要，回写 Collection Payload、MySQL 和 Markdown。</li>
+            <li><strong>存储分工：</strong>Qdrant 保存向量与内容，MySQL 保存切片和元数据，BM25 保存关键词索引，Redis 支持队列与缓存。</li>
+          </ul>
+          <p class="final-note"><strong>核心价值：</strong>非结构化资料经过统一处理后，可被 Agent 以语义和关键词两种方式检索，并持续补充可复用的知识。</p>
+        </div>
+      </div>
+
+      <div class="data-card" style="margin-top: 18px;">
+        <h3>3. Skill 能力大分类</h3>
+        <div class="business-table-wrap">
+          <table class="data-table business-table">
+            <thead><tr><th>能力分类</th><th>主要用途</th><th>代表性输出</th></tr></thead>
+            <tbody>
+              <tr><th>文档与表格生成</th><td>处理 Markdown、Word、Excel 等格式转换和内容生成。</td><td>Word、Excel、结构化数据文件。</td></tr>
+              <tr><th>报告生成</th><td>根据工单和项目数据生成管理、交接、结案及客户汇报材料。</td><td>交接班报告、结案报告、管理员报告、月报和统计报告。</td></tr>
+              <tr><th>工单处理</th><td>覆盖故障申报、信息咨询、变更申请和资产割接等业务流程。</td><td>信息收集、处理建议、变更报告和割接方案。</td></tr>
+              <tr><th>知识检索与技术分析</th><td>检索相似知识和历史案例，辅助问题定性、根因分析与解决方案生成。</td><td>相似案例、排查步骤、风险判断和回滚建议。</td></tr>
+              <tr><th>自动化与外部工具</th><td>调用浏览器自动化、网页抓取及其他 Connector/Plugin 能力。</td><td>资料采集、系统操作和跨工具协同。</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="final-note"><strong>调用方式：</strong>Skill 是 Agent 可按需加载的能力模块，不等同于 Agent，也不代表每次运行都会自动执行。</p>
       </div>
     </section>
 

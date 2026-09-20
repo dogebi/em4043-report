@@ -17,3 +17,5 @@
 - [x] 2026-08-13 PERF-001: run 20 concurrent HTTP users for 30 minutes against https://csc-ai.natec.cn/work-agent/#/project/4/process/task/20 and record P95 evidence.
 
 - [x] 2026-08-13 PERF-001 rerun: 20 concurrent HTTP users for 30 minutes against https://csc-ai.natec.cn/work-agent/#/project/4/process/task/20; result FAIL, P95 6910.05 ms, error rate 93.0029%.
+
+- [x] 本次汇报补充：设计目标、知识库数据流摘要、Skill 能力大分类及 HTML 关键词检查。
