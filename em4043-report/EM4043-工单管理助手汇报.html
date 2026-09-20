@@ -382,6 +382,15 @@
     .data-table tr:last-child th, .data-table tr:last-child td { border-bottom: 0; }
     .data-table th { width: 55%; color: var(--ink-soft); font-weight: 600; }
     .data-table td { color: var(--ink); font-weight: 800; }
+    .business-table-wrap { overflow-x: auto; }
+    .business-table { min-width: 760px; table-layout: fixed; }
+    .business-table th, .business-table td { padding: 12px 14px; line-height: 1.65; }
+    .business-table thead th { background: #e8eef1; color: var(--ink); font-weight: 800; }
+    .business-table thead th:nth-child(1) { width: 16%; }
+    .business-table thead th:nth-child(2) { width: 39%; }
+    .business-table thead th:nth-child(3) { width: 45%; }
+    .business-table tbody th { width: auto; color: var(--accent-dark); font-weight: 800; }
+    .business-table tbody td { color: var(--ink-soft); font-weight: 500; }
     .risk-card { background: var(--warning-pale); border-color: #efd7b6; }
     .risk-card h3 { color: #78430e; }
     .risk-list { display: grid; gap: 13px; margin: 0; padding: 0; list-style: none; }
@@ -552,7 +561,8 @@
 
       <div class="data-card">
         <h3>业务场景与工单类型</h3>
-        <table class="data-table">
+        <div class="business-table-wrap">
+        <table class="data-table business-table">
           <thead><tr><th>业务场景</th><th>业务说明</th><th>工单助手支持</th></tr></thead>
           <tbody>
             <tr><th>故障申报</th><td>记录系统、设备或服务异常，跟踪影响、处理进展和恢复结果。</td><td>快速定位未关闭故障，生成客户可读的进展说明。</td></tr>
@@ -565,6 +575,7 @@
             <tr><th>CSC处理请求</th><td>承接 CSC 内部的跨团队处理请求和服务协调事项。</td><td>统一跟踪请求状态、责任分工和交接信息。</td></tr>
           </tbody>
         </table>
+        </div>
       </div>
 
       <div class="risk-card" style="margin-top: 18px; padding: 22px 24px;">
