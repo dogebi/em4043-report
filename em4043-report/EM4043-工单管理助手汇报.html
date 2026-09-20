@@ -454,6 +454,8 @@
     .bar-caption { margin: 10px 0 0; color: var(--muted); font-size: 11px; }
     .dataflow-button { display: inline-flex; width: 128px; height: 38px; margin-top: 22px; margin-right: 6px; padding: 9px 10px; align-items: center; justify-content: center; border-radius: 8px; background: var(--accent); color: white; font-size: 13px; font-weight: 800; text-align: center; text-decoration: none; vertical-align: middle; }
     .dataflow-button:hover { background: var(--accent-dark); }
+    .top-button { position: fixed; right: 24px; bottom: 24px; z-index: 20; width: 44px; height: 44px; border: 0; border-radius: 12px; background: var(--ink); color: white; font-size: 18px; font-weight: 800; cursor: pointer; box-shadow: 0 6px 18px rgba(23, 33, 43, .22); }
+    .top-button:hover { background: var(--accent); }
 
     footer {
       padding: 24px 0 44px;
@@ -1040,7 +1042,11 @@
   <footer>
     <p>Copyright NTT Communications China 2026</p>
   </footer>
+  <button class="top-button" type="button" aria-label="返回顶部" title="返回顶部">↑</button>
   <script>
+    document.querySelector(".top-button").addEventListener("click", () => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
     document.querySelectorAll(".hero-demo video").forEach((video) => {
       video.playbackRate = 4;
       video.addEventListener("loadedmetadata", () => { video.playbackRate = 4; });
