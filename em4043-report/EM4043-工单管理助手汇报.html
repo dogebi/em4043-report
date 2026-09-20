@@ -35,6 +35,23 @@
     button, a { -webkit-tap-highlight-color: transparent; }
     :focus-visible { outline: 3px solid #f5a623; outline-offset: 3px; }
 
+    .internal-badge {
+      position: fixed;
+      top: 20px;
+      right: -60px;
+      width: 200px;
+      text-align: center;
+      background: #ffeb3b;
+      color: #d32f2f;
+      font-weight: bold;
+      font-size: 16px;
+      padding: 8px 0;
+      transform: rotate(45deg);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+      pointer-events: none;
+    }
+
     .skip-link {
       position: absolute;
       left: 16px;
@@ -496,6 +513,7 @@
   </style>
 </head>
 <body>
+  <div class="internal-badge">NTT社内用</div>
   <a class="skip-link" href="#main-content">跳转到报告正文</a>
 
   <div class="topbar">
