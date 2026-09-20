@@ -15,20 +15,20 @@
 **Files:**
 - Modify: `em4043-report/EM4043-工单管理助手汇报.html` in the existing `<style>` block and immediately after `<body>`.
 
-- [ ] Add a fixed `.section-rail` containing links for `overview`, `architecture`, `business-scenarios`, `scenarios`, `management`, `comparison`, `progress`, `challenges`, and `future`.
-- [ ] Style the rail as hidden by default with `opacity: 0` and `transform: translateY(10px)`, and reveal it with `.section-rail.is-visible`.
-- [ ] Keep the rail hidden at viewport widths below 900px so it does not reduce mobile reading width.
-- [ ] Add `.section-dot.is-active` styling and accessible link labels.
+- [x] Add a fixed `.section-rail` containing links for `overview`, `architecture`, `business-scenarios`, `scenarios`, `management`, `comparison`, `progress`, `challenges`, and `future`.
+- [x] Style the rail as hidden by default with `opacity: 0` and `transform: translateY(10px)`, and reveal it with `.section-rail.is-visible`.
+- [x] Keep the rail hidden at viewport widths below 900px so it does not reduce mobile reading width.
+- [x] Add `.section-dot.is-active` styling and accessible link labels.
 
 ### Task 2: Add scroll behavior and active-section tracking
 
 **Files:**
 - Modify: `em4043-report/EM4043-工单管理助手汇报.html` in the existing `<script>` block.
 
-- [ ] On scroll, reveal the rail when `window.scrollY > 120` and hide it at the top.
-- [ ] Use `IntersectionObserver` with the existing section IDs to toggle the active dot.
-- [ ] Preserve smooth anchor scrolling and support `prefers-reduced-motion` by using instant scrolling when motion reduction is enabled.
-- [ ] Keep the existing TOP button behavior unchanged.
+- [x] On scroll, reveal the rail when `window.scrollY > 120` and hide it at the top.
+- [x] Use `IntersectionObserver` with the existing section IDs to toggle the active dot.
+- [x] Preserve smooth anchor scrolling and support `prefers-reduced-motion` by using instant scrolling when motion reduction is enabled.
+- [x] Keep the existing TOP button behavior unchanged.
 
 ### Task 3: Verify and synchronize
 
@@ -39,4 +39,3 @@
 - [ ] Verify all nine section IDs have matching rail links and the rail starts hidden.
 - [ ] Commit and push the source repository.
 - [ ] Commit and push the GitHub Pages repository.
-
