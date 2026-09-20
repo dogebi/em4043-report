@@ -456,13 +456,13 @@
     .dataflow-button:hover { background: var(--accent-dark); }
     .top-button { position: fixed; right: 24px; bottom: 24px; z-index: 20; width: 44px; height: 44px; border: 0; border-radius: 12px; background: var(--ink); color: white; font-size: 18px; font-weight: 800; cursor: pointer; box-shadow: 0 6px 18px rgba(23, 33, 43, .22); }
     .top-button:hover { background: var(--accent); }
-    .section-rail { position: fixed; top: 50%; right: 22px; z-index: 19; display: grid; gap: 13px; padding: 13px 9px; border: 1px solid var(--line); border-radius: 18px; background: rgba(255,255,255,.9); box-shadow: 0 8px 24px rgba(23,33,43,.12); opacity: 0; pointer-events: none; transform: translate(12px, -50%); transition: opacity .25s ease, transform .25s ease; }
+    .section-rail { position: fixed; top: 50%; right: 22px; z-index: 19; display: grid; gap: 10px; padding: 15px 12px; border: 1px solid rgba(220, 229, 233, .88); border-radius: 16px; background: rgba(255,255,255,.88); box-shadow: 0 12px 30px rgba(23,33,43,.14); opacity: 0; pointer-events: none; transform: translate(12px, -50%); transition: opacity .25s ease, transform .25s ease; }
     .section-rail.is-visible { opacity: 1; pointer-events: auto; transform: translate(0, -50%); }
-    .section-rail::before { content: ""; position: absolute; top: 19px; bottom: 19px; left: 50%; width: 1px; background: var(--line); z-index: 0; }
-    .section-dot { position: relative; z-index: 1; display: block; width: 10px; height: 10px; border: 2px solid var(--muted); border-radius: 50%; background: white; transition: transform .2s ease, background .2s ease, border-color .2s ease; }
-    .section-dot::after { content: attr(aria-label); position: absolute; right: 22px; top: 50%; padding: 4px 8px; border-radius: 6px; background: var(--ink); color: white; font-size: 11px; font-weight: 700; line-height: 1.2; white-space: nowrap; opacity: 0; pointer-events: none; transform: translateY(-50%); transition: opacity .2s ease; }
-    .section-dot:hover::after, .section-dot.is-active::after { opacity: 1; }
-    .section-dot.is-active { width: 14px; height: 14px; margin: -2px; border-color: var(--accent); background: var(--accent); box-shadow: 0 0 0 4px var(--accent-pale); }
+    .section-rail::before { content: ""; position: absolute; top: 16px; bottom: 16px; left: 17px; width: 1px; background: linear-gradient(to bottom, transparent, var(--line) 12%, var(--line) 88%, transparent); z-index: 0; }
+    .section-dot { position: relative; z-index: 1; display: block; width: 24px; height: 3px; border: 0; border-radius: 999px; background: var(--line); box-shadow: 0 0 0 1px rgba(255,255,255,.7); transition: width .25s ease, background .25s ease, box-shadow .25s ease, transform .25s ease; }
+    .section-dot::after { content: attr(aria-label); position: absolute; right: 32px; top: 50%; padding: 6px 9px; border: 1px solid var(--line); border-radius: 7px; background: rgba(23,33,43,.96); color: white; font-size: 11px; font-weight: 700; line-height: 1.2; white-space: nowrap; opacity: 0; pointer-events: none; transform: translate(4px, -50%); transition: opacity .2s ease, transform .2s ease; }
+    .section-dot:hover, .section-dot.is-active { width: 38px; background: var(--accent); box-shadow: 0 0 0 3px var(--accent-pale), 0 0 12px rgba(31, 143, 132, .22); transform: translateX(-1px); }
+    .section-dot:hover::after, .section-dot.is-active::after { opacity: 1; transform: translate(0, -50%); }
     @media (max-width: 900px) { .section-rail { display: none; } }
 
     footer {
