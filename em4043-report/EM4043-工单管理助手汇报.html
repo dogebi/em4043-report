@@ -422,12 +422,13 @@
     .bar-group { display: grid; gap: 10px; margin-bottom: 18px; }
     .bar-group:last-child { margin-bottom: 0; }
     .bar-label { color: var(--ink-soft); font-size: 13px; font-weight: 700; }
-    .bar-row { display: grid; grid-template-columns: 96px 1fr; gap: 10px; align-items: center; }
+    .bar-row { display: grid; grid-template-columns: 96px 1fr 42px; gap: 10px; align-items: center; }
     .bar-name { color: var(--muted); font-size: 12px; }
     .bar-track { height: 12px; overflow: hidden; border-radius: 999px; background: #e8eef1; }
     .bar-fill { height: 100%; border-radius: inherit; background: var(--accent); }
     .bar-fill.traditional { width: 46%; background: #9aa9b2; }
     .bar-fill.agent { width: 86%; background: var(--accent); }
+    .bar-value { color: var(--ink-soft); font-size: 12px; font-weight: 800; text-align: right; }
     .bar-caption { margin: 10px 0 0; color: var(--muted); font-size: 11px; }
 
     footer {
@@ -591,13 +592,13 @@
             <h4>运转效率与生产力对比</h4>
             <div class="bar-group">
               <div class="bar-label">工单处理运转率</div>
-              <div class="bar-row"><span class="bar-name">传统方式</span><div class="bar-track"><div class="bar-fill traditional"></div></div></div>
-              <div class="bar-row"><span class="bar-name">工单管理助手</span><div class="bar-track"><div class="bar-fill agent"></div></div></div>
+              <div class="bar-row"><span class="bar-name">传统方式</span><div class="bar-track"><div class="bar-fill traditional"></div></div><span class="bar-value">46%</span></div>
+              <div class="bar-row"><span class="bar-name">工单管理助手</span><div class="bar-track"><div class="bar-fill agent"></div></div><span class="bar-value">86%</span></div>
             </div>
             <div class="bar-group">
               <div class="bar-label">单位时间生产力</div>
-              <div class="bar-row"><span class="bar-name">传统方式</span><div class="bar-track"><div class="bar-fill traditional"></div></div></div>
-              <div class="bar-row"><span class="bar-name">工单管理助手</span><div class="bar-track"><div class="bar-fill agent"></div></div></div>
+              <div class="bar-row"><span class="bar-name">传统方式</span><div class="bar-track"><div class="bar-fill traditional"></div></div><span class="bar-value">46%</span></div>
+              <div class="bar-row"><span class="bar-name">工单管理助手</span><div class="bar-track"><div class="bar-fill agent"></div></div><span class="bar-value">86%</span></div>
             </div>
             <p class="bar-caption">示意比例，仅用于表达设计目标，不代表当前 UAT 实测指标。</p>
           </div>
