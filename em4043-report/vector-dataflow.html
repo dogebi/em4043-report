@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>vokiRAG 向量库数据流</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            width: 1920px;
+            height: 2200px;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+        .page {
+            width: 1920px;
+            height: 2200px;
+            padding: 28px 32px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        h1 {
+            text-align: center;
+            font-size: 1.85rem;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 2px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 0.82rem;
+            margin-top: 2px;
+            margin-bottom: 4px;
+        }
+
+        /* 通用 */
+        .layer {
+            position: relative;
+            border: 1px solid rgba(148,163,184,0.15);
+            border-radius: 12px;
+            padding: 16px 18px 14px;
+            background: rgba(30,41,59,0.55);
+        }
+        .layer-label {
+            position: absolute;
+            top: -10px;
+            left: 18px;
+            background: #0f172a;
+            padding: 1px 12px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            border-radius: 4px;
+        }
+        .write-label { color: #34d399; border: 1px solid rgba(52,211,153,0.35); }
+        .read-label { color: #60a5fa; border: 1px solid rgba(96,165,250,0.35); }
+        .enrich-label { color: #a3e635; border: 1px solid rgba(163,230,53,0.35); }
+        .store-label { color: #fbbf24; border: 1px solid rgba(251,191,36,0.35); }
+        .concept-label { color: #c084fc; border: 1px solid rgba(192,132,252,0.35); }
+
+        .row-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            flex: 1;
+        }
+        .section-title {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #94a3b8;
+            text-align: center;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        /* 节点 */
+        .node {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 7px 10px;
+            border-radius: 8px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-align: center;
+            min-width: 88px;
+            line-height: 1.25;
+        }
+        .node .sub { font-size: 0.58rem; opacity: 0.72; font-weight: 500; margin-top: 2px; }
+        .node.write { background: rgba(52,211,153,0.15); border: 1px solid rgba(52,211,153,0.35); color: #6ee7b7; }
+        .node.read { background: rgba(96,165,250,0.15); border: 1px solid rgba(96,165,250,0.35); color: #93c5fd; }
+        .node.enrich { background: rgba(163,230,53,0.12); border: 1px solid rgba(163,230,53,0.35); color: #bef264; }
+        .node.store { background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.35); color: #fde68a; }
+        .node.ext { background: rgba(192,132,252,0.12); border: 1px solid rgba(192,132,252,0.35); color: #d8b4fe; }
+        .node.rank { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.35); color: #fca5a5; }
+        .node.meta { background: rgba(45,212,191,0.12); border: 1px solid rgba(45,212,191,0.35); color: #5eead4; }
+
+        .arrow { color: #475569; font-size: 0.95rem; font-weight: bold; flex-shrink: 0; }
+        .flow-h {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            flex-wrap: wrap;
+            margin: 4px 0;
+        }
+        .flow-v {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+        }
+        .badge {
+            display: inline-block;
+            font-size: 0.58rem;
+            padding: 1px 7px;
+            border-radius: 8px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .badge.async { background: rgba(251,191,36,0.15); color: #fcd34d; border: 1px solid rgba(251,191,36,0.3); }
+        .badge.parallel { background: rgba(52,211,153,0.15); color: #34d399; border: 1px solid rgba(52,211,153,0.3); }
+        .badge.sync { background: rgba(96,165,250,0.15); color: #60a5fa; border: 1px solid rgba(96,165,250,0.3); }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(148,163,184,0.2), transparent);
+            margin: 8px 0;
+        }
+
+        /* 双路径 */
+        .dual {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            align-items: stretch;
+        }
+        .path-box {
+            border: 1px dashed rgba(148,163,184,0.22);
+            border-radius: 10px;
+            padding: 10px 12px;
+            flex: 1;
+            text-align: center;
+        }
+        .path-box h4 {
+            font-size: 0.65rem;
+            letter-spacing: 1.5px;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+        .path-box.sem h4 { color: #60a5fa; }
+        .path-box.kw h4 { color: #fbbf24; }
+
+        /* 存储拓扑 */
+        .store-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        .store-card {
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 0.65rem;
+            line-height: 1.45;
+        }
+        .store-card h5 {
+            font-size: 0.72rem;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+        .store-card.qdrant { background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.25); color: #fde68a; }
+        .store-card.mysql { background: rgba(96,165,250,0.08); border: 1px solid rgba(96,165,250,0.25); color: #93c5fd; }
+        .store-card.bm25 { background: rgba(52,211,153,0.08); border: 1px solid rgba(52,211,153,0.25); color: #6ee7b7; }
+        .store-card.redis { background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.25); color: #fca5a5; }
+        .store-card code, .payload-box code {
+            font-family: Consolas, 'Courier New', monospace;
+            font-size: 0.6rem;
+            color: #cbd5e1;
+            background: rgba(15,23,42,0.6);
+            padding: 0 3px;
+            border-radius: 3px;
+        }
+
+        .payload-box {
+            font-size: 0.62rem;
+            line-height: 1.5;
+            color: #94a3b8;
+            background: rgba(15,23,42,0.5);
+            border-radius: 8px;
+            padding: 10px 12px;
+            border: 1px solid rgba(148,163,184,0.12);
+        }
+        .payload-box pre {
+            font-family: Consolas, 'Courier New', monospace;
+            font-size: 0.58rem;
+            color: #a5b4fc;
+            white-space: pre;
+            line-height: 1.4;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            padding-top: 2px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.62rem;
+            color: #94a3b8;
+        }
+        .legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+
+        .note {
+            font-size: 0.6rem;
+            color: #64748b;
+            text-align: center;
+            margin-top: 4px;
+        }
+        .progress-bar {
+            display: flex;
+            gap: 2px;
+            justify-content: center;
+            margin: 6px 0 2px;
+        }
+        .progress-seg {
+            font-size: 0.55rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #64748b;
+            border: 1px solid rgba(100,116,139,0.3);
+        }
+        .progress-seg.active { color: #6ee7b7; border-color: rgba(52,211,153,0.4); background: rgba(52,211,153,0.1); }
+
+        .concept-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        .concept-item {
+            font-size: 0.62rem;
+            color: #94a3b8;
+            line-height: 1.45;
+            padding: 8px 10px;
+            border-radius: 8px;
+            background: rgba(15,23,42,0.4);
+            border: 1px solid rgba(148,163,184,0.1);
+        }
+        .concept-item strong { color: #c4b5fd; display: block; margin-bottom: 3px; font-size: 0.68rem; }
+    </style>
+</head>
+<body>
+<div class="page">
+
+    <h1>vokiRAG 向量库数据流全景</h1>
+    <p class="subtitle">Qdrant 写入 / 检索 / Enrichment 双 Collection &mdash; 从上传到 smart_search 的完整路径</p>
+
+    <!-- ========== 上行：写入 + 检索 ========== -->
+    <div class="row-2col">
+
+        <!-- 写入路径 -->
+        <div class="layer" style="padding-top: 18px;">
+            <span class="layer-label write-label">写入路径 WRITE PATH</span>
+            <div class="section-title">上传 &rarr; 切片 &rarr; 向量化 &rarr; 三存储同步</div>
+
+            <div class="progress-bar">
+                <span class="progress-seg">提取 0-30%</span>
+                <span class="progress-seg active">切片+Embed 35-90%</span>
+                <span class="progress-seg active">Qdrant+BM25</span>
+                <span class="progress-seg">MySQL追踪 90-95%</span>
+            </div>
+
+            <div class="flow-h">
+                <div class="node write">API 上传<br><span class="sub">/kb/upload-async<br>/api/v1/documents</span></div>
+                <span class="arrow">&rarr;</span>
+                <div class="node write">task_processor<br><span class="sub">Redis 任务状态</span></div>
+                <span class="arrow">&rarr;</span>
+                <div class="node write">文本提取<br><span class="sub">file_extractors</span></div>
+                <span class="arrow">&rarr;</span>
+                <div class="node write">SliceStrategy<br><span class="sub">standard/mfg/code</span></div>
+            </div>
+
+            <div class="divider"></div>
+            <div class="section-title">KnowledgeBase.index_documents() &mdash; core/retrieval.py</div>
+
+            <div class="flow-h">
+                <div class="node write">① 切片<br><span class="sub">DocumentSlice[]</span></div>
+                <span class="arrow">&rarr;</span>
+                <div class="node ext">② Embedding API<br><span class="sub">embed_batch<br>1024维 Cosine</span></div>
+                <span class="arrow">&rarr;</span>
+                <div class="node write">③ Qdrant upsert<br><span class="sub">vector_store.py</span></div>
+                <span class="arrow">&rarr;</span>
+                <div class="node write">④ BM25 建索引<br><span class="sub">keyword_indexer</span></div>
+            </div>
+
+            <div class="divider"></div>
+            <div class="dual">
+                <div class="path-box sem">
+                    <h4>Qdrant 写入细节</h4>
+                    <div class="flow-v">
+                        <div class="node store" style="min-width: 200px;">Collection: <code>kb_{kb_id}</code></div>
+                        <span class="arrow">&darr;</span>
+                        <div class="node store" style="min-width: 200px;">Point ID = uuid5(slice_id)<br><span class="sub">确定性 UUID</span></div>
+                        <span class="arrow">&darr;</span>
+                        <div class="node store" style="min-width: 200px;">分批 upsert<br><span class="sub">QDRANT_UPSERT_BATCH_SIZE=30<br>全局写入槽位 Semaphore</span></div>
+                        <span class="arrow">&darr;</span>
+                        <div class="node store" style="min-width: 200px;">Payload: slice_id, title,<br>content, metadata</div>
+                    </div>
+                </div>
+                <div class="path-box kw">
+                    <h4>并行持久化</h4>
+                    <div class="flow-v">
+                        <div class="node meta" style="min-width: 200px;">MySQL file_slices<br><span class="sub">bulk_add_slices_vectorized<br>vector_exists=1</span></div>
+                        <span class="arrow">&darr;</span>
+                        <div class="node meta" style="min-width: 200px;">BM25 内存 + 磁盘<br><span class="sub">bm25_indexes/{kb_id}/</span></div>
+                        <span class="arrow">&darr;</span>
+                        <div class="node meta" style="min-width: 200px;">files/{kb_id}/*.md<br><span class="sub">提取文本备份</span></div>
+                        <span class="badge sync">同步完成 ≈ 95%</span>
+                    </div>
+                </div>
+            </div>
+            <p class="note">Factory 入口: KnowledgeBaseFactory &rarr; VectorStoreBuilder.create_qdrant() &rarr; collection_name = kb_{kb_id}</p>
+        </div>
+
+        <!-- 检索路径 -->
+        <div class="layer" style="padding-top: 18px;">
+            <span class="layer-label read-label">检索路径 READ PATH</span>
+            <div class="section-title">smart_search() &rarr; HybridRetriever / MultiVectorRetriever</div>
+
+            <div class="flow-h">
+                <div class="node read">检索 API<br><span class="sub">/kb/search<br>/api/v1/retrieval</span></div>
+                <span class="arrow">&rarr;</span>
+                <div class="node read">smart_retrieval<br><span class="sub">检测 enrichment_enabled</span></div>
+                <span class="arrow">&rarr;</span>
+                <div class="node ext">Query Embedding<br><span class="sub">同一 Embedding 模型</span></div>
+            </div>
+
+            <div class="divider"></div>
+            <div class="section-title">HybridRetriever.retrieve() &mdash; 双路并行 ThreadPool</div>
+
+            <div class="dual">
+                <div class="path-box sem">
+                    <h4>语义路径 Semantic</h4>
+                    <div class="flow-v">
+                        <div class="node read">query_embedding</div>
+                        <span class="arrow">&darr;</span>
+                        <div class="node read">Qdrant similarity_search<br><span class="sub">Cosine Top-K×2</span></div>
+                        <span class="arrow">&darr;</span>
+                        <div class="node read">Payload 过滤<br><span class="sub">metadata.tags/keywords<br>MatchAny / MatchText</span></div>
+                        <span class="arrow">&darr;</span>
+                        <div class="node read">semantic_score 归一化</div>
+                    </div>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;">
+                    <span class="badge parallel">PARALLEL</span>
+                    <span style="color:#34d399;font-size:1.1rem;">⇄</span>
+                    <span class="badge parallel">JOIN 融合</span>
+                </div>
+                <div class="path-box kw">
+                    <h4>关键词路径 Keyword</h4>
+                    <div class="flow-v">
+                        <div class="node store">Query 分词 + 同义词</div>
+                        <span class="arrow">&darr;</span>
+                        <div class="node store">BM25Okapi 搜索<br><span class="sub">内存索引 &lt;1ms</span></div>
+                        <span class="arrow">&darr;</span>
+                        <div class="node store">keyword_score 归一化</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+            <div class="section-title">多级排序 Ranking Pipeline</div>
+            <div class="flow-h">
+                <div class="node rank">加权融合<br><span class="sub">α·sem + β·kw</span></div>
+                <span class="arrow">&rarr;</span>
+                <div class="node rank">ThresholdFilter</div>
+                <span class="arrow">&rarr;</span>
+                <div class="node rank">Reranker<br><span class="sub">Cross-Encoder</span></div>
+                <span class="arrow">&rarr;</span>
+                <div class="node rank">LLM Refine<br><span class="sub">可选二阶段</span></div>
+                <span class="arrow">&rarr;</span>
+                <div class="node read">Top-K 结果<br><span class="sub">RetrievalResult[]</span></div>
+            </div>
+
+            <div class="divider"></div>
+            <div class="section-title">MultiVector 双 Collection 融合 (enrichment_enabled=true)</div>
+            <div class="flow-h">
+                <div class="node read">kb_{kb_id}<br><span class="sub">原始内容向量<br>weight≈0.7</span></div>
+                <span class="arrow">+</span>
+                <div class="node enrich">kb_{kb_id}_enrichment<br><span class="sub">增强元数据向量<br>weight≈0.3</span></div>
+                <span class="arrow">&rarr;</span>
+                <div class="node rank">按 slice_id 去重融合<br><span class="sub">multi_vector_retrieval.py</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== Enrichment 异步路径 ========== -->
+    <div class="layer" style="padding-top: 18px;">
+        <span class="layer-label enrich-label">异步增强路径 ENRICHMENT (独立 Worker 进程)</span>
+        <div class="flow-h">
+            <div class="node enrich">上传完成 95%<br><span class="sub">不等增强完成</span></div>
+            <span class="arrow">&rarr;</span>
+            <div class="node enrich">EnrichmentQueue<br><span class="sub">Redis enrichment:queue</span></div>
+            <span class="arrow">&rarr;</span>
+            <div class="node enrich">EnrichmentWorker<br><span class="sub">python -m core.enrichment_queue</span></div>
+            <span class="arrow">&rarr;</span>
+            <div class="node ext">LLM 生成元数据<br><span class="sub">questions/keywords/tags/summary</span></div>
+            <span class="arrow">&rarr;</span>
+            <div class="node enrich">EnrichmentManager<br><span class="sub">enrichment_manager.py</span></div>
+        </div>
+        <div class="divider"></div>
+        <div class="dual" style="gap: 24px;">
+            <div class="path-box sem">
+                <h4 style="color:#a3e635;">写入 A：增强 Collection</h4>
+                <div class="flow-v">
+                    <div class="node enrich">构建 enrichment_content<br><span class="sub">Q+K+Tags+Summary 拼接</span></div>
+                    <span class="arrow">&darr;</span>
+                    <div class="node ext">Embedding &rarr; upsert</div>
+                    <span class="arrow">&darr;</span>
+                    <div class="node store">Qdrant <code>kb_{kb_id}_enrichment</code><br><span class="sub">同一 slice_id 关联</span></div>
+                </div>
+            </div>
+            <div class="path-box kw">
+                <h4 style="color:#a3e635;">写入 B：回写原始 Collection Payload</h4>
+                <div class="flow-v">
+                    <div class="node enrich">update_payload<br><span class="sub">metadata.questions/keywords/tags/summary</span></div>
+                    <span class="arrow">&darr;</span>
+                    <div class="node meta">MySQL slice_enrichment 表<br><span class="sub">enrichment_vectorized=1</span></div>
+                    <span class="arrow">&darr;</span>
+                    <div class="node meta">files/{kb_id}/ 增强 MD</div>
+                </div>
+            </div>
+            <div class="path-box sem">
+                <h4 style="color:#fbbf24;">检索时如何使用</h4>
+                <div class="flow-v">
+                    <div class="node read">smart_search 检测标志位</div>
+                    <span class="arrow">&darr;</span>
+                    <div class="node read">两 Collection 并行 HybridRetriever</div>
+                    <span class="arrow">&darr;</span>
+                    <div class="node read">共享 QdrantClient 连接池<br><span class="sub">不同 collection_name</span></div>
+                </div>
+            </div>
+        </div>
+        <p class="note"><span class="badge async">ASYNC</span> 增强与主上传解耦；Worker 必须单独启动 (ENRICHMENT_ENABLED=true)</p>
+    </div>
+
+    <!-- ========== 存储拓扑 + Payload 结构 ========== -->
+    <div class="row-2col" style="flex: unset;">
+        <div class="layer" style="padding-top: 18px;">
+            <span class="layer-label store-label">存储拓扑 STORAGE TOPOLOGY</span>
+            <div class="store-grid">
+                <div class="store-card qdrant">
+                    <h5>Qdrant 向量库</h5>
+                    每 KB 1~2 个 Collection<br>
+                    <code>kb_{kb_id}</code> 原始切片<br>
+                    <code>kb_{kb_id}_enrichment</code> 增强<br>
+                    距离: Cosine · 维度: 1024<br>
+                    模式: server / local<br>
+                    Payload Index 元数据过滤
+                </div>
+                <div class="store-card mysql">
+                    <h5>MySQL 元数据</h5>
+                    knowledge_bases 配置<br>
+                    files 文件注册<br>
+                    file_slices 切片记录<br>
+                    slice_enrichment 增强状态<br>
+                    enrichment_enabled 标志位
+                </div>
+                <div class="store-card bm25">
+                    <h5>BM25 关键词索引</h5>
+                    内存 BM25Okapi<br>
+                    持久化 <code>bm25_indexes/</code><br>
+                    启动时自动 load_index<br>
+                    与 Qdrant 互补，非替代
+                </div>
+                <div class="store-card redis">
+                    <h5>Redis 辅助</h5>
+                    上传任务进度<br>
+                    enrichment 任务队列<br>
+                    Embedding / 检索缓存<br>
+                    API Key 缓存
+                </div>
+            </div>
+        </div>
+
+        <div class="layer" style="padding-top: 18px;">
+            <span class="layer-label store-label">Qdrant Point 数据结构</span>
+            <div class="payload-box">
+<pre>{
+  "id": "uuid5(NAMESPACE_DNS, slice_id)",
+  "vector": [1024 floats],          // EmbeddingProvider 输出
+  "payload": {
+    "slice_id": "KBxxx_file_001_s0",
+    "title": "章节标题",
+    "content": "切片正文...",
+    "metadata": {
+      "vector_file_id": "uuid",
+      "filename": "doc.pdf",
+      "questions": [...],             // Enrichment 回写
+      "keywords": [...],
+      "tags": [...],
+      "summary": "..."
+    }
+  }
+}</pre>
+            </div>
+            <p class="note">增强 Collection 额外含 is_enrichment=true, original_kb_id, enrichment_type</p>
+        </div>
+    </div>
+
+    <!-- ========== 关键概念扫盲 ========== -->
+    <div class="layer" style="padding-top: 18px; flex: 1;">
+        <span class="layer-label concept-label">关键概念速查</span>
+        <div class="concept-grid">
+            <div class="concept-item">
+                <strong>Collection 命名规则</strong>
+                每个知识库 kb_id 对应 Qdrant collection <code>kb_{kb_id}</code>。开启增强后逻辑 ID 为 <code>{kb_id}_enrichment</code>，实际 collection 为 <code>kb_{kb_id}_enrichment</code>，共享同一 Embedding 模型与维度。
+            </div>
+            <div class="concept-item">
+                <strong>向量 ≠ 唯一存储</strong>
+                Qdrant 存向量+payload；MySQL 存切片元数据与状态；BM25 存倒排索引。三者通过 slice_id 关联，删除 KB 需同步清理全部三层。
+            </div>
+            <div class="concept-item">
+                <strong>PageIndex 独立</strong>
+                PDF 章节目录树存 pageindex_trees/ + MySQL，走 LLM 树搜索，<em>不写入</em> Qdrant 主 pipeline，与向量检索并行独立。
+            </div>
+            <div class="concept-item">
+                <strong>写入并发控制</strong>
+                QDRANT_MAX_CONCURRENT_WRITES 全局 Semaphore 限制跨任务并发 upsert；单任务内 batch 串行，避免 httpx 客户端竞态。
+            </div>
+            <div class="concept-item">
+                <strong>检索入口统一</strong>
+                管理后台 / 第三方 API 均经 smart_search() 路由：无增强 &rarr; HybridRetriever；有增强 &rarr; MultiVectorRetriever 双 Collection 融合。
+            </div>
+            <div class="concept-item">
+                <strong>配置入口</strong>
+                QDRANT_MODE=server|local · QDRANT_HOST/PORT · QDRANT_USE_PAYLOAD_INDEX · DEFAULT_EMBEDDING_PROVIDER · ENRICHMENT_ENABLED
+            </div>
+        </div>
+    </div>
+
+    <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#34d399;"></div>写入/索引</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#60a5fa;"></div>检索/查询</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#a3e635;"></div>Enrichment 增强</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#fbbf24;"></div>存储层</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#c084fc;"></div>外部 API</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f87171;"></div>排序/Rerank</div>
+    </div>
+
+</div>
+</body>
+</html>
