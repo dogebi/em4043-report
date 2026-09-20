@@ -580,13 +580,15 @@
         <div class="data-card">
           <h3>2. 知识库数据流摘要</h3>
           <ul class="workflow-list">
-            <li><strong>写入路径：</strong>文件上传后进行切片、规范化和内容抽取，同时生成 Embedding，并写入 Qdrant 向量库。</li>
-            <li><strong>双路检索：</strong>查询同时进行语义向量检索和 BM25 关键词检索，再合并结果。</li>
-            <li><strong>结果优化：</strong>经过加权融合、阈值过滤、Reranker 和 LLM 精排，返回 Top-K 结果。</li>
-            <li><strong>异步增强：</strong>由 Enrichment Worker 生成问题、关键词、标签和摘要，回写 Collection Payload、MySQL 和 Markdown。</li>
-            <li><strong>存储分工：</strong>Qdrant 保存向量与内容，MySQL 保存切片和元数据，BM25 保存关键词索引，Redis 支持队列与缓存。</li>
+            <li><strong>接入与任务：</strong>Web、第三方 API 或 MCP 通过 FastAPI 接入；上传接口立即返回 task_id，由后台任务异步处理。</li>
+            <li><strong>解析与切片：</strong>根据文件格式进行 Markdown、PDF、Excel、OCR 等解析和清洗，再按 standard、manufacturing、code 等场景策略切片。</li>
+            <li><strong>基础入库：</strong>切片生成 Embedding 后写入原始 Qdrant Collection，同时建立 BM25 关键词索引；文件、切片追踪和状态写入 MySQL，原始与 Markdown 文件保存在文件系统。</li>
+            <li><strong>元数据增强：</strong>LLM 为切片生成 questions、keywords、tags、summary。小规模切片可立即处理，中等规模进入 Redis 队列由独立 Worker 异步处理，大规模任务进入待处理状态。</li>
+            <li><strong>智能检索：</strong>smart_search 根据增强开关选择标准 HybridRetriever 或 MultiVectorRetriever；原始内容与增强元数据分别进行向量检索和 BM25 检索，再按 slice_id 融合。</li>
+            <li><strong>排序与输出：</strong>融合结果经过阈值过滤、Reranker 和可选的 LLM Refine，返回最终 Top-K；PDF 还可通过独立的 PageIndex 树进行章节级推理检索。</li>
+            <li><strong>存储与协同：</strong>Qdrant 保存原始/增强向量，MySQL 保存业务元数据和增强记录，Redis 管理任务队列与缓存，文件系统保存 Markdown、BM25 索引和 PageIndex 树。</li>
           </ul>
-          <p class="final-note"><strong>核心价值：</strong>非结构化资料经过统一处理后，可被 Agent 以语义和关键词两种方式检索，并持续补充可复用的知识。</p>
+          <p class="final-note"><strong>核心价值：</strong>非结构化资料经过“解析—切片—向量化—关键词索引—元数据增强”形成可持续迭代的知识资产；Agent 可根据问题类型选择语义、关键词、增强元数据或章节结构进行检索。</p>
         </div>
       </div>
 

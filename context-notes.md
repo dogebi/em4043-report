@@ -26,3 +26,4 @@
 
 - 本次汇报补充参考 `D:\dev\cscAI\skill_Agent.html`，将 Skill 归纳为文档与表格生成、报告生成、工单处理、知识检索与技术分析、自动化与外部工具五类。
 - 知识库摘要采用发布汇报所需的抽象层级，概括为写入、双路检索、结果优化、异步增强和存储分工。
+- 本次知识库补充以 `SYSTEM_ARCHITECTURE.md`、`UPLOAD_EXECUTION_FLOW.md`、`retrieval_flow_analysis.md`、`METADATA_ENRICHMENT_ARCHITECTURE.md` 和 `architecture-client.html` 为主要依据，补充异步上传、场景切片、Enrichment 分流、smart_search 路由和 PageIndex 独立检索。
