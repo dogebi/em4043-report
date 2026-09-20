@@ -490,6 +490,7 @@
   <div class="nav-wrap">
     <nav class="nav" aria-label="报告导航">
       <a href="#overview">结论摘要</a>
+      <a href="#business-scenarios">业务场景</a>
       <a href="#scenarios">四类场景</a>
       <a href="#management">管理视角</a>
       <a href="#comparison">价值对比</a>
@@ -537,6 +538,38 @@
           <strong>效率收益需要继续计时</strong>
           <p>当前数据证明了汇总和分析能力，但暂不直接推导人稼动率百分比，需对人工与 AI 流程进行计时对比。</p>
         </article>
+      </div>
+    </section>
+
+    <section id="business-scenarios" class="management" aria-labelledby="business-scenarios-title">
+      <div class="section-heading">
+        <p class="label">Business scenarios</p>
+        <div>
+          <h2 id="business-scenarios-title">覆盖从故障受理到服务交付的业务场景</h2>
+          <p>工单助手不仅服务于单一的故障处理，也覆盖咨询协助、资产操作、变更管理和 CSC 请求等日常服务流程。通过统一的业务分类，可以让不同类型的工单使用一致的查询、分析和报告方法。</p>
+        </div>
+      </div>
+
+      <div class="data-card">
+        <h3>业务场景与工单类型</h3>
+        <table class="data-table">
+          <thead><tr><th>业务场景</th><th>业务说明</th><th>工单助手支持</th></tr></thead>
+          <tbody>
+            <tr><th>故障申报</th><td>记录系统、设备或服务异常，跟踪影响、处理进展和恢复结果。</td><td>快速定位未关闭故障，生成客户可读的进展说明。</td></tr>
+            <tr><th>咨询和协助</th><td>处理使用咨询、操作指导和日常技术协助请求。</td><td>结合知识库和历史案例，输出明确的处理建议。</td></tr>
+            <tr><th>邮件</th><td>管理通过邮件提交的服务请求，并将非结构化内容转为可跟踪工单。</td><td>提取问题、责任人、待办和回复要点。</td></tr>
+            <tr><th>资产割接</th><td>支持设备、系统或业务资产迁移、切换和交接过程。</td><td>整理割接范围、执行步骤、风险和验证结果。</td></tr>
+            <tr><th>变更申请</th><td>管理配置、策略、网络和系统变更的申请、审批与执行。</td><td>关联变更工单，生成风险判断、回滚方案和验证项目。</td></tr>
+            <tr><th>IT帮助</th><td>处理账号、终端、软件和办公环境等 IT 支持事项。</td><td>按标准流程快速分派、处理和反馈。</td></tr>
+            <tr><th>故障审查</th><td>对已发生故障进行复盘，确认原因、影响和改进措施。</td><td>汇总处理过程，区分事实与推测并沉淀改进项。</td></tr>
+            <tr><th>CSC处理请求</th><td>承接 CSC 内部的跨团队处理请求和服务协调事项。</td><td>统一跟踪请求状态、责任分工和交接信息。</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="risk-card" style="margin-top: 18px; padding: 22px 24px;">
+        <h3>当前故障申报类型的实测情况</h3>
+        <p>在 EM4043 项目中，故障申报类工单共有 2 张，占全部 15 张工单的 13.3%。其中，EM4043-10 为监控告警类故障，处理时长为 1 小时 26 分钟；EM4043-14 为同类 <code>swap space usage</code> 告警，当前已恢复。该类型适合重点展示故障影响识别、处理进展跟踪和客户反馈生成能力。</p>
       </div>
     </section>
 
