@@ -28,3 +28,4 @@
 - 知识库摘要采用发布汇报所需的抽象层级，概括为写入、双路检索、结果优化、异步增强和存储分工。
 - 本次知识库补充以 `SYSTEM_ARCHITECTURE.md`、`UPLOAD_EXECUTION_FLOW.md`、`retrieval_flow_analysis.md`、`METADATA_ENRICHMENT_ARCHITECTURE.md` 和 `architecture-client.html` 为主要依据，补充异步上传、场景切片、Enrichment 分流、smart_search 路由和 PageIndex 独立检索。
 - 设计目标卡片新增效率与生产力横向条形图，当前使用示意比例并明确标注非 UAT 实测数据，避免虚构业务指标。
+- 在四类用户价值变化之后新增当前进展、主要课题和未来扩展三部分，保留用户提供的汇报口径。

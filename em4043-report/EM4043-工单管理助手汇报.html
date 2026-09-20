@@ -523,6 +523,9 @@
       <a href="#scenarios">四类场景</a>
       <a href="#management">管理视角</a>
       <a href="#comparison">价值对比</a>
+      <a href="#progress">当前进展</a>
+      <a href="#challenges">主要课题</a>
+      <a href="#future">未来扩展</a>
       <button class="print-button" type="button" onclick="window.print()">打印 / 导出 PDF</button>
     </nav>
   </div>
@@ -943,6 +946,70 @@
           <tr><td>SM</td><td>月报、客户汇报、趋势分析</td><td>导出数据并手工制作文档</td><td>自动生成统计结果、管理结论和报告初稿</td></tr>
         </tbody>
       </table>
+    </section>
+
+    <section id="progress" class="next-step" aria-labelledby="progress-title">
+      <div class="section-heading">
+        <p class="label">Current progress</p>
+        <div>
+          <h2 id="progress-title">5、当前进展</h2>
+          <p>通过真实业务场景持续验证 AI 的使用价值，并同步完成问题闭环和输出质量优化。</p>
+        </div>
+      </div>
+      <div class="measurement-grid">
+        <article class="measurement-card">
+          <span class="measurement-number">01 · UAT</span>
+          <h3>主动交互</h3>
+          <p>让大家主动与 AI 交互，在实际工单处理中找到有价值、可复用的应用场景。</p>
+        </article>
+        <article class="measurement-card">
+          <span class="measurement-number">02 · BUG</span>
+          <h3>问题对应</h3>
+          <p>持续收集、定位和跟进使用过程中发现的问题，推动 Bug 对应和闭环处理。</p>
+        </article>
+        <article class="measurement-card">
+          <span class="measurement-number">03 · 优化</span>
+          <h3>提示器调整</h3>
+          <p>调整提示器和回答约束，避免出现有逻辑的胡说八道以及编造数据。</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="challenges" class="next-step" aria-labelledby="challenges-title">
+      <div class="section-heading">
+        <p class="label">Key challenges</p>
+        <div>
+          <h2 id="challenges-title">6、面临的主要课题</h2>
+          <p>下一阶段重点在于提高知识基础的完整性、控制复杂查询的执行成本，并提升系统稳定性。</p>
+        </div>
+      </div>
+      <div class="risk-card">
+        <ul class="risk-list">
+          <li><strong>知识库</strong><span>工单、资产知识库的完整性与持续优化，以及查询机制的进一步完善。</span></li>
+          <li><strong>复杂查询</strong><span>Agent 调用 MCP 时偶尔生成过于复杂的查询，导致执行时间过长甚至卡死。</span></li>
+          <li><strong>系统稳定性</strong><span>持续排查系统资源或业务逻辑问题导致的故障，完善监控、定位和恢复机制。</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="future" class="next-step" aria-labelledby="future-title">
+      <div class="section-heading">
+        <p class="label">Future possibilities</p>
+        <div>
+          <h2 id="future-title">7、未来扩展（畅想）</h2>
+          <p>通过扩展 Skill 和底层引擎，让 Agent 能够覆盖更广的资料获取、技术分析和智能协作场景。</p>
+        </div>
+      </div>
+      <div class="insight-grid">
+        <article class="insight">
+          <strong>Skill 能力扩展</strong>
+          <p>增加爬虫、源码抓取和官方文档采集能力，进行更深入的技术分析，提高回答准确性。</p>
+        </article>
+        <article class="insight">
+          <strong>引擎替换与增强</strong>
+          <p>探索使用 DeepSeek Harness 等方案替换或增强当前引擎，让 AI 获得更强的理解、规划和执行能力。</p>
+        </article>
+      </div>
     </section>
 
   </main>
