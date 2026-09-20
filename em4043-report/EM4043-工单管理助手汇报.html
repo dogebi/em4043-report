@@ -1069,8 +1069,30 @@
     const sectionRail = document.querySelector(".section-rail");
     const sectionDots = [...document.querySelectorAll(".section-dot")];
     const reportSections = sectionDots.map((dot) => document.querySelector(dot.getAttribute("href"))).filter(Boolean);
-    const showSectionRail = () => sectionRail.classList.toggle("is-visible", window.scrollY > 120);
+    let sectionRailHideTimer;
+    let sectionRailHovering = false;
+    const hideSectionRail = () => {
+      if (!sectionRailHovering) sectionRail.classList.remove("is-visible");
+    };
+    const showSectionRail = () => {
+      if (window.scrollY <= 120) {
+        sectionRail.classList.remove("is-visible");
+        return;
+      }
+      sectionRail.classList.add("is-visible");
+      clearTimeout(sectionRailHideTimer);
+      sectionRailHideTimer = setTimeout(hideSectionRail, 900);
+    };
     window.addEventListener("scroll", showSectionRail, { passive: true });
+    sectionRail.addEventListener("mouseenter", () => {
+      sectionRailHovering = true;
+      clearTimeout(sectionRailHideTimer);
+      sectionRail.classList.add("is-visible");
+    });
+    sectionRail.addEventListener("mouseleave", () => {
+      sectionRailHovering = false;
+      hideSectionRail();
+    });
     showSectionRail();
     const sectionObserver = new IntersectionObserver((entries) => {
       entries.filter((entry) => entry.isIntersecting).forEach((entry) => {
