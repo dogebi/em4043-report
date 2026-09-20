@@ -417,6 +417,18 @@
     .measurement-card p { margin-bottom: 0; color: var(--ink-soft); font-size: 14px; }
     .final-note { margin-top: 24px; padding: 24px 28px; border-left: 4px solid var(--accent); background: var(--card); color: var(--ink-soft); }
     .final-note strong { color: var(--ink); }
+    .comparison-bars { margin-top: 24px; padding-top: 22px; border-top: 1px solid var(--line); }
+    .comparison-bars h4 { margin: 0 0 16px; font-size: 15px; }
+    .bar-group { display: grid; gap: 10px; margin-bottom: 18px; }
+    .bar-group:last-child { margin-bottom: 0; }
+    .bar-label { color: var(--ink-soft); font-size: 13px; font-weight: 700; }
+    .bar-row { display: grid; grid-template-columns: 96px 1fr; gap: 10px; align-items: center; }
+    .bar-name { color: var(--muted); font-size: 12px; }
+    .bar-track { height: 12px; overflow: hidden; border-radius: 999px; background: #e8eef1; }
+    .bar-fill { height: 100%; border-radius: inherit; background: var(--accent); }
+    .bar-fill.traditional { width: 46%; background: #9aa9b2; }
+    .bar-fill.agent { width: 86%; background: var(--accent); }
+    .bar-caption { margin: 10px 0 0; color: var(--muted); font-size: 11px; }
 
     footer {
       padding: 24px 0 44px;
@@ -575,6 +587,20 @@
               <tr><td>结果依赖个人经验，难以持续复用。</td><td>结合工单、资产、历史案例、知识库和监控信息，输出可验证的分析结果。</td></tr>
             </tbody>
           </table>
+          <div class="comparison-bars" aria-label="传统方式与工单管理助手的示意效率对比">
+            <h4>运转效率与生产力对比</h4>
+            <div class="bar-group">
+              <div class="bar-label">工单处理运转率</div>
+              <div class="bar-row"><span class="bar-name">传统方式</span><div class="bar-track"><div class="bar-fill traditional"></div></div></div>
+              <div class="bar-row"><span class="bar-name">工单管理助手</span><div class="bar-track"><div class="bar-fill agent"></div></div></div>
+            </div>
+            <div class="bar-group">
+              <div class="bar-label">单位时间生产力</div>
+              <div class="bar-row"><span class="bar-name">传统方式</span><div class="bar-track"><div class="bar-fill traditional"></div></div></div>
+              <div class="bar-row"><span class="bar-name">工单管理助手</span><div class="bar-track"><div class="bar-fill agent"></div></div></div>
+            </div>
+            <p class="bar-caption">示意比例，仅用于表达设计目标，不代表当前 UAT 实测指标。</p>
+          </div>
         </div>
 
         <div class="data-card">
