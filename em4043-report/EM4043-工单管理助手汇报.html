@@ -578,6 +578,8 @@
           <p>从“查询工具”升级为能够理解项目、调用知识和工具、协同完成工单的 Agent。</p>
           <a class="dataflow-button" href="csc-component-architecture.html" target="_blank" rel="noopener noreferrer">业务逻辑架构</a>
           <a class="dataflow-button" href="csc-system-architecture.html" target="_blank" rel="noopener noreferrer">组件架构</a>
+          <a class="dataflow-button" href="../../rag-service/docs/vector-dataflow.html" target="_blank" rel="noopener noreferrer">知识库</a>
+          <a class="dataflow-button" href="../../skill_Agent.html" target="_blank" rel="noopener noreferrer">SKILL</a>
         </div>
       </div>
 
@@ -619,7 +621,6 @@
             <li><strong>排序与输出：</strong>融合结果经过阈值过滤、Reranker 和可选的 LLM Refine，返回最终 Top-K；PDF 还可通过独立的 PageIndex 树进行章节级推理检索。</li>
             <li><strong>存储与协同：</strong>Qdrant 保存原始/增强向量，MySQL 保存业务元数据和增强记录，Redis 管理任务队列与缓存，文件系统保存 Markdown、BM25 索引和 PageIndex 树。</li>
           </ul>
-          <a class="dataflow-button" href="../../rag-service/docs/vector-dataflow.html" target="_blank" rel="noopener noreferrer">Dataflow</a>
           <p class="final-note"><strong>核心价值：</strong>非结构化资料经过“解析—切片—向量化—关键词索引—元数据增强”形成可持续迭代的知识资产；Agent 可根据问题类型选择语义、关键词、增强元数据或章节结构进行检索。</p>
         </div>
       </div>
@@ -638,7 +639,6 @@
             </tbody>
           </table>
         </div>
-        <a class="dataflow-button" href="../../skill_Agent.html" target="_blank" rel="noopener noreferrer">SKILL详细</a>
         <p class="final-note"><strong>调用方式：</strong>Skill 是 Agent 可按需加载的能力模块，不等同于 Agent，也不代表每次运行都会自动执行。</p>
       </div>
     </section>
