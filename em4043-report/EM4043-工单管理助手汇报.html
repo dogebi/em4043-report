@@ -456,7 +456,7 @@
     .dataflow-button:hover { background: var(--accent-dark); }
     .top-button { position: fixed; right: 24px; bottom: 24px; z-index: 20; width: 44px; height: 44px; border: 0; border-radius: 12px; background: var(--ink); color: white; font-size: 18px; font-weight: 800; cursor: pointer; box-shadow: 0 6px 18px rgba(23, 33, 43, .22); }
     .top-button:hover { background: var(--accent); }
-    .section-rail { position: fixed; top: 50%; right: 18px; z-index: 19; display: flex; width: 10px; height: 430px; padding: 19px 0; box-sizing: border-box; flex-direction: column; align-items: center; justify-content: space-between; border: 1px solid rgba(220, 229, 233, .88); border-radius: 8px; background: rgba(255,255,255,.88); box-shadow: 0 8px 18px rgba(23,33,43,.12); opacity: 0; pointer-events: none; transform: translate(12px, -50%); transition: opacity .25s ease, transform .25s ease; }
+    .section-rail { position: fixed; top: 50%; right: 18px; z-index: 19; display: flex; width: 10px; height: 430px; padding: 19px 0; box-sizing: border-box; flex-direction: column; align-items: center; justify-content: space-between; border: 1px solid rgba(220, 229, 233, .88); border-radius: 8px; background: rgba(255,255,255,.88); box-shadow: 0 8px 18px rgba(23,33,43,.12); opacity: 0; pointer-events: auto; transform: translate(12px, -50%); transition: opacity .25s ease, transform .25s ease; }
     .section-rail.is-visible { opacity: 1; pointer-events: auto; transform: translate(0, -50%); }
     .section-rail::before { content: ""; position: absolute; top: 16px; bottom: 16px; left: 4px; width: 1px; background: linear-gradient(to bottom, transparent, var(--line) 12%, var(--line) 88%, transparent); z-index: 0; }
     .section-dot { position: relative; top: auto; right: auto; z-index: 1; display: block; flex: 0 0 auto; width: 15px; height: 4px; border: 0; border-radius: 999px; background: var(--line); box-shadow: 0 0 0 1px rgba(255,255,255,.7); transition: background .25s ease, box-shadow .25s ease, transform .25s ease; }
@@ -1074,14 +1074,17 @@
     const hideSectionRail = () => {
       if (!sectionRailHovering) sectionRail.classList.remove("is-visible");
     };
+    const scheduleSectionRailHide = (delay = 900) => {
+      clearTimeout(sectionRailHideTimer);
+      sectionRailHideTimer = setTimeout(hideSectionRail, delay);
+    };
     const showSectionRail = () => {
       if (window.scrollY <= 120) {
         sectionRail.classList.remove("is-visible");
         return;
       }
       sectionRail.classList.add("is-visible");
-      clearTimeout(sectionRailHideTimer);
-      sectionRailHideTimer = setTimeout(hideSectionRail, 900);
+      scheduleSectionRailHide();
     };
     window.addEventListener("scroll", showSectionRail, { passive: true });
     sectionRail.addEventListener("mouseenter", () => {
@@ -1091,7 +1094,7 @@
     });
     sectionRail.addEventListener("mouseleave", () => {
       sectionRailHovering = false;
-      hideSectionRail();
+      scheduleSectionRailHide(5000);
     });
     showSectionRail();
     const sectionObserver = new IntersectionObserver((entries) => {
