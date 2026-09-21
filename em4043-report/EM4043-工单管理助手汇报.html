@@ -4,8 +4,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="基于 EM4043 实际测试记录的工单管理助手四类用户场景汇报报告。">
-  <title>EM4043 工单管理助手 | 四类用户场景汇报</title>
+  <meta name="description" content="基于实际测试记录的工单管理助手四类用户场景汇报报告。">
+  <title>CSCAI工单管理助手 | 四类用户场景汇报</title>
   <style>
     :root {
       --ink: #17212b;
@@ -525,10 +525,11 @@
 <body>
   <div class="internal-badge">NTT社内用</div>
   <nav class="section-rail" aria-label="报告章节导航">
-    <a class="section-dot is-active" href="#overview" aria-label="结论摘要"></a>
-    <a class="section-dot" href="#architecture" aria-label="设计与架构"></a>
+    <a class="section-dot is-active" href="#overview" aria-label="设计理念"></a>
+    <a class="section-dot" href="#design-goal" aria-label="设计目标（对比）"></a>
+    <a class="section-dot" href="#architecture" aria-label="Design & architecture"></a>
     <a class="section-dot" href="#business-scenarios" aria-label="业务场景"></a>
-    <a class="section-dot" href="#scenarios" aria-label="四类场景"></a>
+    <a class="section-dot" href="#scenarios" aria-label="整体架构与逻辑"></a>
     <a class="section-dot" href="#management" aria-label="管理视角"></a>
     <a class="section-dot" href="#comparison" aria-label="价值对比"></a>
     <a class="section-dot" href="#progress" aria-label="当前进展"></a>
@@ -540,33 +541,34 @@
   <div class="topbar">
     <div class="topbar-inner">
       <span class="topbar-label">CSCAI 工单管理助手 / 管理层汇报v0.1</span>
-      <span class="topbar-note">数据基于 EM4043 项目实际测试记录</span>
+      <span class="topbar-note">数据基于项目实际测试记录</span>
     </div>
   </div>
 
   <header class="hero">
     <div class="topbar-inner hero-grid">
       <div>
-        <p class="eyebrow">EM4043 · Executive Brief</p>
+        <p class="eyebrow">Executive Brief</p>
         <h1>把分散的工单信息，变成可执行的管理判断。</h1>
         <p class="hero-lede">围绕 T1、T2、Admin、SM 四类用户，展示工单管理助手如何从查询、分析、统计延伸到客户月报。</p>
       </div>
       <aside class="hero-signal">
         <strong>一份数据，四种工作结果。</strong>
         <p>从客户可读的处理进展，到技术可执行的排查方案，再到管理统计和月报初稿。</p>
-        <p class="source">实测样本：15 张 EM4043 工单</p>
+        <p class="source">实测样本：15 张工单</p>
       </aside>
     </div>
   </header>
 
   <div class="nav-wrap">
     <nav class="nav" aria-label="报告导航">
-      <a href="#overview">结论摘要</a>
-      <a href="#architecture">设计与架构</a>
+      <a href="#overview">设计理念</a>
+      <a href="#design-goal">设计目标（对比）</a>
+      <a href="#architecture">Design & architecture</a>
+      <a href="#scenarios">整体架构与逻辑</a>
       <a href="#business-scenarios">业务场景</a>
-      <a href="#scenarios">四类场景</a>
-      <a href="#management">管理视角</a>
-      <a href="#comparison">价值对比</a>
+      <!-- <a href="#management">管理视角</a>
+      <a href="#comparison">价值对比</a> -->
       <a href="#progress">当前进展</a>
       <a href="#challenges">主要课题</a>
       <a href="#future">未来扩展</a>
@@ -577,10 +579,10 @@
   <main id="main-content">
     <section id="overview" aria-labelledby="overview-title">
       <div class="section-heading">
-        <p class="label">Executive brief</p>
+        <p class="label">Design Philosophy</p>
         <div>
-          <h2 id="overview-title">先看结论</h2>
-          <p>EM4043 的实测数据已经足以说明，工单助手的核心价值在于统一信息口径，并把信息整理成下一步行动。</p>
+          <h2 id="overview-title">设计理念</h2>
+          <p>实测数据已经足以说明，工单助手的核心价值在于统一信息口径，并把信息整理成下一步行动。</p>
         </div>
       </div>
 
@@ -588,7 +590,8 @@
         <blockquote>工单管理助手不是简单替代人工查询，而是把工单、知识库、历史经验和人员记忆，统一转换为可执行的分析结果。</blockquote>
         <aside>
           <p><strong>当前能证明的能力</strong></p>
-          <p>能够快速回答总量、类型、处理时长、长期未解决事项等问题，并生成面向不同角色的结构化结果。</p>
+          <p>- 以Agent为主，理由：工单助手，AI应该是一个了解项目，熟悉工单，懂技术，能够查监控的有思考能力的智能体，而不是跑流程的机器人。能够与人进行对话，一起完成工单对应。</p>
+          <p>- AI要能够自己进行数据整理，理由：数据庞大，且文件格式不统一，没有那么多人工处理数据，需要自动识别归类到知识库。</p>
         </aside>
       </div>
 
@@ -601,7 +604,7 @@
         <div class="metric"><span class="metric-value">93h</span><span class="metric-label">未完结累计占用时长</span></div>
       </div>
 
-      <div class="insight-grid">
+      <!-- <div class="insight-grid">
         <article class="insight">
           <strong>信息汇总已经可见</strong>
           <p>15 张工单中，9 张已关闭或完成，6 张仍需跟进，管理人员无需先跨系统拼接全局状态。</p>
@@ -614,6 +617,41 @@
           <strong>效率收益需要继续计时</strong>
           <p>当前数据证明了汇总和分析能力，但暂不直接推导人稼动率百分比，需对人工与 AI 流程进行计时对比。</p>
         </article>
+      </div> -->
+    </section>
+
+    <section id="design-goal" class="management" aria-labelledby="design-goal-title">
+      <div class="section-heading">
+        <p class="label">Design goal</p>
+        <div>
+          <h2 id="design-goal-title">设计目标（对比）</h2>
+          <p>从固定流程与人工整理，转向以 Agent 为主、可理解上下文并持续沉淀知识的工单协作方式。</p>
+        </div>
+      </div>
+      <div class="data-card">
+        <h3>1. 设计目标（对比）</h3>
+        <table class="data-table business-table design-goal-table">
+          <thead><tr><th>传统方式</th><th>工单管理助手目标</th></tr></thead>
+          <tbody>
+            <tr><td>按固定流程执行，遇到复杂问题需要人工判断。</td><td>以 Agent 为主，理解项目、工单和技术上下文，与人对话并共同完成工单。</td></tr>
+            <tr><td>人工跨系统查找、整理和确认数据。</td><td>自动识别不同格式的数据，整理、归类并沉淀到知识库。</td></tr>
+            <tr><td>结果依赖个人经验，难以持续复用。</td><td>结合工单、资产、历史案例、知识库和监控信息，输出可验证的分析结果。</td></tr>
+          </tbody>
+        </table>
+        <div class="comparison-bars" aria-label="传统方式与工单管理助手的示意效率对比">
+          <h4>运转效率与生产力对比</h4>
+          <div class="bar-group">
+            <div class="bar-label">工单处理运转率</div>
+            <div class="bar-row"><span class="bar-name">传统方式</span><div class="bar-track"><div class="bar-fill traditional"></div></div><span class="bar-value">46%</span></div>
+            <div class="bar-row"><span class="bar-name">工单管理助手</span><div class="bar-track"><div class="bar-fill agent"></div></div><span class="bar-value">86%</span></div>
+          </div>
+          <div class="bar-group">
+            <div class="bar-label">单位时间生产力</div>
+            <div class="bar-row"><span class="bar-name">传统方式</span><div class="bar-track"><div class="bar-fill traditional"></div></div><span class="bar-value">46%</span></div>
+            <div class="bar-row"><span class="bar-name">工单管理助手</span><div class="bar-track"><div class="bar-fill agent"></div></div><span class="bar-value">86%</span></div>
+          </div>
+          <p class="bar-caption">数据实际测试来源于实际业务使用场景。</p>
+        </div>
       </div>
     </section>
 
@@ -631,32 +669,6 @@
       </div>
 
       <div class="management-grid">
-        <div class="data-card">
-          <h3>1. 设计目标（对比）</h3>
-          <table class="data-table business-table design-goal-table">
-            <thead><tr><th>传统方式</th><th>工单管理助手目标</th></tr></thead>
-            <tbody>
-              <tr><td>按固定流程执行，遇到复杂问题需要人工判断。</td><td>以 Agent 为主，理解项目、工单和技术上下文，与人对话并共同完成工单。</td></tr>
-              <tr><td>人工跨系统查找、整理和确认数据。</td><td>自动识别不同格式的数据，整理、归类并沉淀到知识库。</td></tr>
-              <tr><td>结果依赖个人经验，难以持续复用。</td><td>结合工单、资产、历史案例、知识库和监控信息，输出可验证的分析结果。</td></tr>
-            </tbody>
-          </table>
-          <div class="comparison-bars" aria-label="传统方式与工单管理助手的示意效率对比">
-            <h4>运转效率与生产力对比</h4>
-            <div class="bar-group">
-              <div class="bar-label">工单处理运转率</div>
-              <div class="bar-row"><span class="bar-name">传统方式</span><div class="bar-track"><div class="bar-fill traditional"></div></div><span class="bar-value">46%</span></div>
-              <div class="bar-row"><span class="bar-name">工单管理助手</span><div class="bar-track"><div class="bar-fill agent"></div></div><span class="bar-value">86%</span></div>
-            </div>
-            <div class="bar-group">
-              <div class="bar-label">单位时间生产力</div>
-              <div class="bar-row"><span class="bar-name">传统方式</span><div class="bar-track"><div class="bar-fill traditional"></div></div><span class="bar-value">46%</span></div>
-              <div class="bar-row"><span class="bar-name">工单管理助手</span><div class="bar-track"><div class="bar-fill agent"></div></div><span class="bar-value">86%</span></div>
-            </div>
-            <p class="bar-caption">数据实际测试来源于实际业务使用场景。</p>
-          </div>
-        </div>
-
         <div class="data-card">
           <h3>2. 知识库数据流摘要</h3>
           <ul class="workflow-list">
