@@ -429,6 +429,7 @@
     .risk-list span { color: #6d5437; }
 
     .comparison { margin-top: 22px; }
+    #overview { margin-top: 96px; }
     .comparison-table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; font-size: 14px; }
     .comparison-table th, .comparison-table td { padding: 15px 18px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
     .comparison-table th { background: #e8eef1; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; }
@@ -530,13 +531,13 @@
 <body>
   <div class="internal-badge">NTT社内用</div>
   <nav class="section-rail" aria-label="报告章节导航">
-    <a class="section-dot is-active" href="#overview" aria-label="设计理念"></a>
     <a class="section-dot" href="#design-goal" aria-label="设计目标"></a>
+    <a class="section-dot is-active" href="#overview" aria-label="设计理念"></a>
     <a class="section-dot" href="#architecture" aria-label="整体架构与逻辑"></a>
     <!-- <a class="section-dot" href="#business-scenarios" aria-label="业务场景"></a> -->
     <a class="section-dot" href="#scenarios" aria-label="业务场景"></a>
     <!-- <a class="section-dot" href="#management" aria-label="管理视角"></a> -->
-    <a class="section-dot" href="#comparison" aria-label="价值对比"></a>
+    <!-- <a class="section-dot" href="#comparison" aria-label="价值对比"></a> -->
     <a class="section-dot" href="#progress" aria-label="当前进展"></a>
     <a class="section-dot" href="#challenges" aria-label="主要课题"></a>
     <a class="section-dot" href="#future" aria-label="未来扩展"></a>
@@ -567,8 +568,8 @@
 
   <div class="nav-wrap">
     <nav class="nav" aria-label="报告导航">
+      <a href="#design-goal">设计目标</a>
       <a href="#overview">设计理念</a>
-      <a href="#design-goal">设计目标（对比）</a>
       <!-- <a href="#architecture">Design & architecture</a> -->
       <a href="#scenarios">整体架构与逻辑</a>
       <!-- <a href="#business-scenarios">业务场景</a> -->
@@ -582,6 +583,25 @@
   </div>
 
   <main id="main-content">
+      <section id="comparison" class="comparison" aria-labelledby="comparison-title">
+      <div class="section-heading">
+        <p class="label">Value shift</p>
+        <div>
+          <h2 id="comparison-title">设计目标-四类用户的价值变化</h2>
+          <p>价值不在于把每一步都自动化，而在于让每个角色更快得到适合自己工作的结果。</p>
+        </div>
+      </div>
+      <table class="comparison-table">
+        <thead><tr><th>用户</th><th>主要关注点</th><th>传统方式</th><th>工单助手带来的变化</th></tr></thead>
+        <tbody>
+          <tr><td>T1</td><td>快速定位、客户反馈、交接完整</td><td>查资料、问负责人、手工写回复</td><td>自动汇总工单情况并生成客户说明</td></tr>
+          <tr><td>T2</td><td>根因分析、风险判断、解决方案</td><td>依赖经验，手动查文档和历史工单</td><td>综合分析工单、变更、知识库并生成排查方案</td></tr>
+          <tr><td>现场管理</td><td>总量、状态、负责人、超时和风险</td><td>手工统计、找人确认</td><td>自动生成全局统计并发现异常</td></tr>
+          <tr><td>SM</td><td>月报、客户汇报、趋势分析</td><td>导出数据并手工制作文档</td><td>自动生成统计结果、管理结论和报告初稿</td></tr>
+        </tbody>
+      </table>
+    </section>
+
     <section id="overview" aria-labelledby="overview-title">
       <div class="section-heading">
         <p class="label">Design Philosophy</p>
@@ -625,7 +645,7 @@
       </div> -->
     </section>
 
-    <section id="design-goal" class="management" aria-labelledby="design-goal-title">
+    <!-- <section id="design-goal" class="management" aria-labelledby="design-goal-title">
       <div class="section-heading">
         <p class="label">Design goal</p>
         <div>
@@ -658,7 +678,7 @@
           <p class="bar-caption">数据实际测试来源于实际业务使用场景。</p>
         </div>
       </div>
-    </section>
+    </section> -->
 
     <section id="architecture" class="management" aria-labelledby="architecture-title">
       <div class="section-heading">
@@ -670,6 +690,27 @@
           <a class="dataflow-button" href="csc-system-architecture.html">组件架构</a>
           <a class="dataflow-button" href="vector-dataflow.html">知识库</a>
           <a class="dataflow-button" href="skill_Agent.html#4-skill">SKILL</a>
+        </div>
+      </div>
+
+      <div class="management-grid">
+        <div class="data-card">
+          <h3>业务逻辑架构</h3>
+          <ul class="workflow-list">
+            <li><strong>请求入口：</strong>工单 Webhook 或用户会话进入 ESM 平台，创建并分发处理任务。</li>
+            <li><strong>Agent 编排：</strong>AgentEngine 启动 MasterAgent，按上下文调用 LLM、MCP 和 Skill。</li>
+            <li><strong>工具执行：</strong>本地工具、远程工具或子 Agent 执行具体步骤，并返回中间结果。</li>
+            <li><strong>结果回传：</strong>引擎汇总执行结果，通过 Redis 事件和 SSE 流式返回前端。</li>
+          </ul>
+        </div>
+        <div class="data-card">
+          <h3>组件架构</h3>
+          <ul class="workflow-list">
+            <li><strong>业务管理：</strong>ESM 负责权限、工单、执行、知识和智能体配置。</li>
+            <li><strong>执行核心：</strong>Agent Engine 负责多智能体编排，并统一接入 Skill、MCP、Plugin 和 LLM。</li>
+            <li><strong>状态与记忆：</strong>Redis 支撑任务队列和事件传递，数据库保存会话、业务元数据和记忆。</li>
+            <li><strong>知识与工具：</strong>Qdrant 提供向量检索，MCP 连接 Jira、Zabbix 等外部工具。</li>
+          </ul>
         </div>
       </div>
 
@@ -807,6 +848,14 @@
               </video>
             </div>
           </div>
+          <!-- <div class="hero-demo">
+            <div class="demo-frame">
+              <video controls loop muted playsinline preload="metadata" aria-label="EM4043 T1 Demo">
+                <source src="assets/t1-demo.mp4" type="video/mp4">
+                EM4043 T1 Demo
+              </video>
+            </div>
+          </div> -->
         </article>
 
         <article class="scenario" id="t2">
@@ -895,7 +944,7 @@
           <div class="hero-demo">
             <div class="demo-frame">
               <video controls loop muted playsinline preload="metadata" aria-label="EM4043 现场管理 Demo">
-                <source src="assets/现场管理-demo.mp4" type="video/mp4">
+                <source src="assets/t1-demo.mp4" type="video/mp4">
                 EM4043 现场管理 Demo
               </video>
             </div>
@@ -990,24 +1039,7 @@
       </div>
     </section> -->
 
-    <section id="comparison" class="comparison" aria-labelledby="comparison-title">
-      <div class="section-heading">
-        <p class="label">Value shift</p>
-        <div>
-          <h2 id="comparison-title">四类用户的价值变化</h2>
-          <p>价值不在于把每一步都自动化，而在于让每个角色更快得到适合自己工作的结果。</p>
-        </div>
-      </div>
-      <table class="comparison-table">
-        <thead><tr><th>用户</th><th>主要关注点</th><th>传统方式</th><th>工单助手带来的变化</th></tr></thead>
-        <tbody>
-          <tr><td>T1</td><td>快速定位、客户反馈、交接完整</td><td>查资料、问负责人、手工写回复</td><td>自动汇总工单情况并生成客户说明</td></tr>
-          <tr><td>T2</td><td>根因分析、风险判断、解决方案</td><td>依赖经验，手动查文档和历史工单</td><td>综合分析工单、变更、知识库并生成排查方案</td></tr>
-          <tr><td>现场管理</td><td>总量、状态、负责人、超时和风险</td><td>手工统计、找人确认</td><td>自动生成全局统计并发现异常</td></tr>
-          <tr><td>SM</td><td>月报、客户汇报、趋势分析</td><td>导出数据并手工制作文档</td><td>自动生成统计结果、管理结论和报告初稿</td></tr>
-        </tbody>
-      </table>
-    </section>
+
 
     <section id="progress" class="next-step" aria-labelledby="progress-title">
       <div class="section-heading">
@@ -1030,8 +1062,10 @@
         </article>
         <article class="measurement-card">
           <span class="measurement-number">03 · 优化</span>
-          <h3>提示词调整</h3>
-          <p>调整提示词和回答约束，避免出现有逻辑的胡说八道以及编造数据。</p>
+          <h3>提示词及工具等调整</h3>
+          <p>- 调整提示词和回答约束，避免出现有逻辑的胡说八道以及编造数据。</p>
+          <p>- 优化数据蒸馏及数据精确度。</p>
+          <p>- 对业务的工具（mcp/skill/插件）增加及优化。</p>
         </article>
       </div>
     </section>
