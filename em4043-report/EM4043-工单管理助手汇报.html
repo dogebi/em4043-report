@@ -349,6 +349,9 @@
     .evidence h4 { color: var(--accent-dark); }
     .evidence p { margin: 0; color: var(--ink-soft); font-size: 14px; }
     .workflow-list { margin: 0; padding-left: 20px; color: var(--ink-soft); font-size: 14px; }
+    .knowledge-flow-card { grid-column: 1 / -1; }
+    .knowledge-flow-card .workflow-list { columns: 2; column-gap: 34px; }
+    .knowledge-flow-card .workflow-list li { break-inside: avoid; }
     .workflow-list li { margin: 7px 0; }
     .prompt {
       padding: 16px 18px;
@@ -474,6 +477,8 @@
 
     @media (max-width: 900px) {
       .hero-grid, .summary-panel, .management-grid { grid-template-columns: 1fr; gap: 28px; }
+      .knowledge-flow-card { grid-column: auto; }
+      .knowledge-flow-card .workflow-list { columns: 1; }
       .summary-panel aside { padding: 18px 0 0; border-top: 1px solid rgba(255,255,255,.28); border-left: 0; }
       .metric-band { grid-template-columns: repeat(3, 1fr); }
       .metric:nth-child(3) { border-right: 0; }
@@ -564,7 +569,7 @@
     <nav class="nav" aria-label="报告导航">
       <a href="#overview">设计理念</a>
       <a href="#design-goal">设计目标（对比）</a>
-      <a href="#architecture">Design & architecture</a>
+      <!-- <a href="#architecture">Design & architecture</a> -->
       <a href="#scenarios">整体架构与逻辑</a>
       <a href="#business-scenarios">业务场景</a>
       <!-- <a href="#management">管理视角</a>
@@ -595,14 +600,14 @@
         </aside>
       </div>
 
-      <div class="metric-band" aria-label="EM4043 核心指标">
+      <!-- <div class="metric-band" aria-label="EM4043 核心指标">
         <div class="metric"><span class="metric-value">15</span><span class="metric-label">项目工单总数</span></div>
         <div class="metric"><span class="metric-value">9</span><span class="metric-label">已关闭或已完成</span></div>
         <div class="metric"><span class="metric-value">60%</span><span class="metric-label">完成率</span></div>
         <div class="metric"><span class="metric-value">6</span><span class="metric-label">处理中或未完结</span></div>
         <div class="metric"><span class="metric-value">10</span><span class="metric-label">变更相关工单</span></div>
         <div class="metric"><span class="metric-value">93h</span><span class="metric-label">未完结累计占用时长</span></div>
-      </div>
+      </div> -->
 
       <!-- <div class="insight-grid">
         <article class="insight">
@@ -624,7 +629,7 @@
       <div class="section-heading">
         <p class="label">Design goal</p>
         <div>
-          <h2 id="design-goal-title">设计目标（对比）</h2>
+          <h2 id="design-goal-title">设计目标</h2>
           <p>从固定流程与人工整理，转向以 Agent 为主、可理解上下文并持续沉淀知识的工单协作方式。</p>
         </div>
       </div>
@@ -659,7 +664,7 @@
       <div class="section-heading">
         <p class="label">Design & architecture</p>
         <div>
-          <h2 id="architecture-title">设计目标、知识库与 Skill 能力</h2>
+          <h2 id="architecture-title">整体架构与逻辑</h2>
           <p>从“查询工具”升级为能够理解项目、调用知识和工具、协同完成工单的 Agent。</p>
           <a class="dataflow-button" href="csc-component-architecture.html">业务逻辑架构</a>
           <a class="dataflow-button" href="csc-system-architecture.html">组件架构</a>
@@ -669,8 +674,8 @@
       </div>
 
       <div class="management-grid">
-        <div class="data-card">
-          <h3>2. 知识库数据流摘要</h3>
+        <div class="data-card knowledge-flow-card">
+          <h3>知识库数据流摘要</h3>
           <ul class="workflow-list">
             <li><strong>接入与任务：</strong>Web、第三方 API 或 MCP 通过 FastAPI 接入；上传接口立即返回 task_id，由后台任务异步处理。</li>
             <li><strong>解析与切片：</strong>根据文件格式进行 Markdown、PDF、Excel、OCR 等解析和清洗，再按 standard、manufacturing、code 等场景策略切片。</li>
@@ -685,7 +690,7 @@
       </div>
 
       <div class="data-card" style="margin-top: 18px;">
-        <h3>3. Skill 能力大分类</h3>
+        <h3>Skill 能力大分类</h3>
         <div class="business-table-wrap">
           <table class="data-table business-table skill-table">
             <thead><tr><th>大类</th><th>能力分类</th><th>主要用途</th><th>代表性输出</th></tr></thead>
