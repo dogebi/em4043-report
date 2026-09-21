@@ -531,11 +531,11 @@
   <div class="internal-badge">NTT社内用</div>
   <nav class="section-rail" aria-label="报告章节导航">
     <a class="section-dot is-active" href="#overview" aria-label="设计理念"></a>
-    <a class="section-dot" href="#design-goal" aria-label="设计目标（对比）"></a>
-    <a class="section-dot" href="#architecture" aria-label="Design & architecture"></a>
-    <a class="section-dot" href="#business-scenarios" aria-label="业务场景"></a>
-    <a class="section-dot" href="#scenarios" aria-label="整体架构与逻辑"></a>
-    <a class="section-dot" href="#management" aria-label="管理视角"></a>
+    <a class="section-dot" href="#design-goal" aria-label="设计目标"></a>
+    <a class="section-dot" href="#architecture" aria-label="整体架构与逻辑"></a>
+    <!-- <a class="section-dot" href="#business-scenarios" aria-label="业务场景"></a> -->
+    <a class="section-dot" href="#scenarios" aria-label="业务场景"></a>
+    <!-- <a class="section-dot" href="#management" aria-label="管理视角"></a> -->
     <a class="section-dot" href="#comparison" aria-label="价值对比"></a>
     <a class="section-dot" href="#progress" aria-label="当前进展"></a>
     <a class="section-dot" href="#challenges" aria-label="主要课题"></a>
@@ -555,7 +555,7 @@
       <div>
         <p class="eyebrow">Executive Brief</p>
         <h1>把分散的工单信息，变成可执行的管理判断。</h1>
-        <p class="hero-lede">围绕 T1、T2、Admin、SM 四类用户，展示工单管理助手如何从查询、分析、统计延伸到客户月报。</p>
+        <p class="hero-lede">围绕 T1、T2、现场管理、SM 四类用户，展示工单管理助手如何从查询、分析、统计延伸到客户月报。</p>
       </div>
       <aside class="hero-signal">
         <strong>一份数据，四种工作结果。</strong>
@@ -571,7 +571,7 @@
       <a href="#design-goal">设计目标（对比）</a>
       <!-- <a href="#architecture">Design & architecture</a> -->
       <a href="#scenarios">整体架构与逻辑</a>
-      <a href="#business-scenarios">业务场景</a>
+      <!-- <a href="#business-scenarios">业务场景</a> -->
       <!-- <a href="#management">管理视角</a>
       <a href="#comparison">价值对比</a> -->
       <a href="#progress">当前进展</a>
@@ -707,11 +707,11 @@
       </div>
     </section>
 
-    <section id="business-scenarios" class="management" aria-labelledby="business-scenarios-title">
+    <!-- <section id="business-scenarios" class="management" aria-labelledby="business-scenarios-title">
       <div class="section-heading">
         <p class="label">Business scenarios</p>
         <div>
-          <h2 id="business-scenarios-title">覆盖从故障受理到服务交付的业务场景</h2>
+          <h2 id="business-scenarios-title">业务场景</h2>
           <p>工单助手不仅服务于单一的故障处理，也覆盖咨询协助、资产操作、变更管理和 CSC 请求等日常服务流程。通过统一的业务分类，可以让不同类型的工单使用一致的查询、分析和报告方法。</p>
         </div>
       </div>
@@ -736,16 +736,16 @@
       </div>
 
       <div class="risk-card" style="margin-top: 18px; padding: 22px 24px;">
-        <h3>当前故障申报类型的实测情况</h3>
+        <h3>案例：当前故障申报类型的实测情况</h3>
         <p>在 EM4043 项目中，故障申报类工单共有 2 张，占全部 15 张工单的 13.3%。其中，EM4043-10 为监控告警类故障，处理时长为 1 小时 26 分钟；EM4043-14 为同类 <code>swap space usage</code> 告警，当前已恢复。该类型适合重点展示故障影响识别、处理进展跟踪和客户反馈生成能力。</p>
       </div>
-    </section>
+    </section> -->
 
     <section id="scenarios" class="scenarios" aria-labelledby="scenarios-title">
       <div class="section-heading">
         <p class="label">Four user scenarios</p>
         <div>
-          <h2 id="scenarios-title">四类用户，四种结果</h2>
+          <h2 id="scenarios-title">业务场景：四类用户，四种结果</h2>
           <p>同一批工单数据，按照不同角色的工作目标重新组织，直接服务于客户沟通、技术处理和管理决策。</p>
         </div>
       </div>
@@ -755,7 +755,7 @@
           <div class="scenario-head">
             <div class="scenario-code">T1</div>
             <div>
-              <h3>客户问题快速定位与反馈</h3>
+              <h3>业务场景1：客户问题快速定位与反馈</h3>
               <p class="scenario-role">关注是否及时受理、当前进展、预计方向和最终客户反馈。</p>
             </div>
             <span class="role-tag">客户沟通</span>
@@ -813,7 +813,7 @@
           <div class="scenario-head">
             <div class="scenario-code">T2</div>
             <div>
-              <h3>技术问题分析与解决方案生成</h3>
+              <h3>业务场景2：技术问题分析与解决方案生成</h3>
               <p class="scenario-role">关注根因分析、影响范围、历史相似问题和可执行的处理方案。</p>
             </div>
             <span class="role-tag">技术处理</span>
@@ -856,11 +856,11 @@
           </div>
         </article>
 
-        <article class="scenario" id="admin">
+        <article class="scenario" id="现场管理">
           <div class="scenario-head">
-            <div class="scenario-code">Admin</div>
+            <div class="scenario-code">现场管理</div>
             <div>
-              <h3>工单统计、人员负载和异常管理</h3>
+              <h3>业务场景3：工单统计、人员负载和异常管理</h3>
               <p class="scenario-role">关注全局运行情况、状态分布、负责人、处理时长和异常事项。</p>
             </div>
             <span class="role-tag">全局管理</span>
@@ -894,9 +894,9 @@
           </div>
           <div class="hero-demo">
             <div class="demo-frame">
-              <video controls loop muted playsinline preload="metadata" aria-label="EM4043 Admin Demo">
-                <source src="assets/admin-demo.mp4" type="video/mp4">
-                EM4043 Admin Demo
+              <video controls loop muted playsinline preload="metadata" aria-label="EM4043 现场管理 Demo">
+                <source src="assets/现场管理-demo.mp4" type="video/mp4">
+                EM4043 现场管理 Demo
               </video>
             </div>
           </div>
@@ -906,7 +906,7 @@
           <div class="scenario-head">
             <div class="scenario-code">SM</div>
             <div>
-              <h3>客户月报、项目统计和管理分析</h3>
+              <h3>业务场景4：客户月报、项目统计和管理分析</h3>
               <p class="scenario-role">关注客户月报、项目趋势、服务质量、工单分类和资源投入情况。</p>
             </div>
             <span class="role-tag">客户汇报</span>
@@ -951,12 +951,12 @@
       </div>
     </section>
 
-    <section id="management" class="management" aria-labelledby="management-title">
+    <!-- <section id="management" class="management" aria-labelledby="management-title">
       <div class="section-heading">
         <p class="label">Management view</p>
         <div>
           <h2 id="management-title">把异常事项放到管理台面上</h2>
-          <p>Admin 和 SM 最需要的不是更多信息，而是统一口径后的重点、风险和下一步。</p>
+          <p>现场管理 和 SM 最需要的不是更多信息，而是统一口径后的重点、风险和下一步。</p>
         </div>
       </div>
 
@@ -988,7 +988,7 @@
           </ul>
         </aside>
       </div>
-    </section>
+    </section> -->
 
     <section id="comparison" class="comparison" aria-labelledby="comparison-title">
       <div class="section-heading">
@@ -1003,7 +1003,7 @@
         <tbody>
           <tr><td>T1</td><td>快速定位、客户反馈、交接完整</td><td>查资料、问负责人、手工写回复</td><td>自动汇总工单情况并生成客户说明</td></tr>
           <tr><td>T2</td><td>根因分析、风险判断、解决方案</td><td>依赖经验，手动查文档和历史工单</td><td>综合分析工单、变更、知识库并生成排查方案</td></tr>
-          <tr><td>Admin</td><td>总量、状态、负责人、超时和风险</td><td>手工统计、找人确认</td><td>自动生成全局统计并发现异常</td></tr>
+          <tr><td>现场管理</td><td>总量、状态、负责人、超时和风险</td><td>手工统计、找人确认</td><td>自动生成全局统计并发现异常</td></tr>
           <tr><td>SM</td><td>月报、客户汇报、趋势分析</td><td>导出数据并手工制作文档</td><td>自动生成统计结果、管理结论和报告初稿</td></tr>
         </tbody>
       </table>
