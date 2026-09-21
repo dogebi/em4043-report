@@ -8,7 +8,7 @@
         html, body {
             width: 100%;
             height: 100%;
-            overflow: hidden;
+            overflow: auto;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
             background: #0f172a;
             color: #e2e8f0;
@@ -565,7 +565,7 @@
 </div>
 <script>
     function fitPageToViewport() {
-        const scale = Math.min(1, window.innerWidth / 1920, window.innerHeight / 2200);
+        const scale = Math.min(1, window.innerWidth / 1920);
         document.querySelector('.page').style.transform = `scale(${scale})`;
     }
 
