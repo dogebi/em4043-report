@@ -430,6 +430,11 @@
     .risk-list span { color: #6d5437; }
 
     .comparison { margin-top: 22px; }
+    .comparison-visual { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 18px; align-items: center; }
+    .comparison-figure { margin: 0; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); box-shadow: 0 8px 24px rgba(23, 33, 43, .08); }
+    .comparison-figure img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 10px; }
+    .comparison-figure figcaption { padding: 12px 4px 2px; color: var(--ink-soft); font-size: 14px; font-weight: 800; text-align: center; }
+    .comparison-arrow { color: var(--accent-dark); font-size: 28px; font-weight: 900; }
     #overview { margin-top: 96px; }
     .comparison-table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; font-size: 14px; }
     .comparison-table th, .comparison-table td { padding: 15px 18px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
@@ -487,6 +492,8 @@
       .metric:nth-child(n+4) { border-top: 1px solid var(--line); }
       .metric:nth-child(4) { border-right: 1px solid var(--line); }
       .section-heading { grid-template-columns: 1fr; gap: 8px; }
+      .comparison-visual { grid-template-columns: 1fr; }
+      .comparison-arrow { transform: rotate(90deg); justify-self: center; }
     }
     @media (max-width: 680px) {
       .topbar-inner, main, footer, .nav { width: min(100% - 28px, 1180px); }
@@ -532,7 +539,7 @@
 <body>
   <div class="internal-badge">NTT社内用</div>
   <nav class="section-rail" aria-label="报告章节导航">
-    <a class="section-dot" href="#design-goal" aria-label="设计目标"></a>
+    <a class="section-dot" href="#design-goal" aria-label="WHAT"></a>
     <a class="section-dot is-active" href="#overview" aria-label="设计理念"></a>
     <a class="section-dot" href="#architecture" aria-label="整体架构与逻辑"></a>
     <!-- <a class="section-dot" href="#business-scenarios" aria-label="业务场景"></a> -->
@@ -547,7 +554,7 @@
 
   <div class="topbar">
     <div class="topbar-inner">
-      <span class="topbar-label">CSCAI 工单管理助手 / 管理层汇报v0.1</span>
+      <span class="topbar-label">CSCAI 工单管理助手 / 管理层汇报v0.2</span>
       <span class="topbar-note">数据基于项目实际测试记录</span>
     </div>
   </div>
@@ -556,20 +563,20 @@
     <div class="topbar-inner hero-grid">
       <div>
         <p class="eyebrow">Executive Brief</p>
-        <h1>把分散的工单信息，变成可执行的管理判断。</h1>
+        <h1>工单管理助手</h1>
         <p class="hero-lede">围绕 T1、T2、现场管理、SM 四类用户，展示工单管理助手如何从查询、分析、统计延伸到客户月报。</p>
       </div>
       <aside class="hero-signal">
         <strong>一份数据，四种工作结果。</strong>
         <p>从客户可读的处理进展，到技术可执行的排查方案，再到管理统计和月报初稿。</p>
-        <p class="source">实测样本：15 张工单</p>
+        <!-- <p class="source">实测样本：15 张工单</p> -->
       </aside>
     </div>
   </header>
 
   <div class="nav-wrap">
     <nav class="nav" aria-label="报告导航">
-      <a href="#design-goal">设计目标</a>
+      <a href="#design-goal">WHAT</a>
       <a href="#overview">设计理念</a>
       <!-- <a href="#architecture">Design & architecture</a> -->
       <a href="#scenarios">整体架构与逻辑</a>
@@ -588,19 +595,21 @@
       <div class="section-heading">
         <p class="label">Value shift</p>
         <div>
-          <h2 id="comparison-title">设计目标-四类用户的价值变化</h2>
+          <h2 id="comparison-title">WHAT ?</h2>
           <p>价值不在于把每一步都自动化，而在于让每个角色更快得到适合自己工作的结果。</p>
         </div>
       </div>
-      <table class="comparison-table">
-        <thead><tr><th>用户</th><th>主要关注点</th><th>传统方式</th><th>工单助手带来的变化</th></tr></thead>
-        <tbody>
-          <tr><td>T1</td><td>快速定位、客户反馈、交接完整</td><td>查资料、问负责人、手工写回复</td><td>自动汇总工单情况并生成客户说明</td></tr>
-          <tr><td>T2</td><td>根因分析、风险判断、解决方案</td><td>依赖经验，手动查文档和历史工单</td><td>综合分析工单、变更、知识库并生成排查方案</td></tr>
-          <tr><td>现场管理</td><td>总量、状态、负责人、超时和风险</td><td>手工统计、找人确认</td><td>自动生成全局统计并发现异常</td></tr>
-          <tr><td>SM</td><td>月报、客户汇报、趋势分析</td><td>导出数据并手工制作文档</td><td>自动生成统计结果、管理结论和报告初稿</td></tr>
-        </tbody>
-      </table>
+      <div class="comparison-visual" aria-label="传统人工处理与 AI 协作处理对比">
+        <figure class="comparison-figure">
+          <img src="assets/human.png" alt="人工处理工单：人员独立处理 CSC 工单">
+          <figcaption>传统人工处理</figcaption>
+        </figure>
+        <div class="comparison-arrow" aria-hidden="true">→</div>
+        <figure class="comparison-figure">
+          <img src="assets/humanAI.png" alt="AI 协作处理工单：人员与 AI 工单助手协同工作">
+          <figcaption>AI 协作处理</figcaption>
+        </figure>
+      </div>
     </section>
 
     <section id="overview" aria-labelledby="overview-title">
