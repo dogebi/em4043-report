@@ -619,7 +619,7 @@
       </div>
 
       <div class="summary-panel">
-        <blockquote>工单管理助手不是简单替代人工查询，而是把工单、知识库、历史经验和人员记忆，统一转换为可执行的分析结果。</blockquote>
+        <blockquote>管理助手不是简单替代人工查询，而是把工单、知识库、历史经验和人员记忆，统一转换为可执行的分析结果。</blockquote>
         <aside>
           <p><strong>当前能证明的能力</strong></p>
           <p>- 以Agent为主，理由：工单助手，AI应该是一个了解项目，熟悉工单，懂技术，能够查监控的有思考能力的智能体，而不是跑流程的机器人。能够与人进行对话，一起完成工单对应。</p>
@@ -804,11 +804,11 @@
             <div class="scenario-code">T1</div>
             <div>
               <h3>业务场景1：工单待办</h3>
-              <p class="scenario-role">关注是否及时受理、当前进展、预计方向和最终客户反馈。</p>
+              <p class="scenario-role">需要看一下当前所有未解决、未关闭的工单，包括子任务。我想知道手中工单的概况，当前的进展以及后续应该如何对应。请以表格的方式显示，根据案件的重要程度和需要遵守的SLA给我排序，并提示风险点。以便我逐个工单对应。</p>
             </div>
-            <span class="role-tag">客户沟通</span>
+            <span class="role-tag">T1客户沟通</span>
           </div>
-          <div class="scenario-grid">
+          <!-- <div class="scenario-grid">
             <div>
               <h4>传统人工方式</h4>
               <ul>
@@ -828,8 +828,8 @@
                 <li>导入 KB（知识库）内容，辅助问题定位。</li>
               </ul>
             </div>
-          </div>
-          <div class="evidence">
+          </div> -->
+          <!-- <div class="evidence">
             <div>
               <h4>T1 典型工作场景</h4>
               <ol class="workflow-list">
@@ -854,7 +854,7 @@
                 EM4043 T1 Demo
               </video>
             </div>
-          </div>
+          </div> -->
           <!-- <div class="hero-demo">
             <div class="demo-frame">
               <video controls loop muted playsinline preload="metadata" aria-label="EM4043 T1 Demo">
@@ -864,110 +864,16 @@
             </div>
           </div> -->
         </article>
-
-        <article class="scenario" id="t2">
+                <article class="scenario" id="sm">
           <div class="scenario-head">
-            <div class="scenario-code">T2</div>
+            <div class="scenario-code">T1</div>
             <div>
-              <h3>业务场景2：工程师工单分析</h3>
-              <p class="scenario-role">关注根因分析、影响范围、历史相似问题和可执行的处理方案。</p>
+              <h3>业务场景2：客户故障报告</h3>
+              <p class="scenario-role">这个工单已经恢复，我需要给客户一个故障报告，请帮我按标准模板生成[中文]报告。</p>
             </div>
-            <span class="role-tag">技术处理</span>
+            <span class="role-tag">T1故障报告</span>
           </div>
-          <div class="scenario-grid">
-            <div>
-              <h4>传统人工方式</h4>
-              <ul>
-                <li>手动检索历史工单、知识库和变更记录。</li>
-                <li>依靠个人经验判断可能根因。</li>
-                <li>人工比对相关设备、资产和近期变更。</li>
-                <li>排查、回滚和验证方案需要单独编写。</li>
-              </ul>
-            </div>
-            <div>
-              <h4>工单助手输出</h4>
-              <ul class="assistant-list">
-                <li>区分故障现象、已确认事实与推测内容。</li>
-                <li>关联历史案例、近期变更和影响范围。</li>
-                <li>生成排查步骤、处理方案和回滚方案。</li>
-                <li>列出变更后的验证项目。</li>
-                <li>通过 SOP 蒸馏，沉淀可复用的处理流程。</li>
-              </ul>
-            </div>
-          </div>
-          <div class="evidence">
-            <div>
-              <h4>EM4043 实测依据</h4>
-              <p>变更相关工单共有 10 张，占总工单数 66.7%。EM4043-2、3、8、9 分别涉及互联网访问阻止策略、工程师处理变更、黑名单阻止策略和关联工程师处理变更，适合联合分析处理进度与技术风险。</p>
-            </div>
-            <div class="prompt"><strong>演示问题</strong>请分析 EM4043-2、EM4043-3、EM4043-8 和 EM4043-9 的关联关系，区分已确认事实与推测，并输出排查步骤、处理建议和回滚方案。</div>
-          </div>
-          <div class="hero-demo">
-            <div class="demo-frame">
-              <video controls loop muted playsinline preload="metadata" aria-label="EM4043 T2 Demo">
-                <source src="assets/t2-demo.mp4" type="video/mp4">
-                EM4043 T2 Demo
-              </video>
-            </div>
-          </div>
-        </article>
-
-        <article class="scenario" id="现场管理">
-          <div class="scenario-head">
-            <div class="scenario-code">现场管理</div>
-            <div>
-              <h3>业务场景3：管理者工单督办</h3>
-              <p class="scenario-role">关注全局运行情况、状态分布、负责人、处理时长和异常事项。</p>
-            </div>
-            <span class="role-tag">全局管理</span>
-          </div>
-          <div class="scenario-grid">
-            <div>
-              <h4>传统人工方式</h4>
-              <ul>
-                <li>找不同负责人询问状态，再手动汇总。</li>
-                <li>导出 Jira 数据后制作统计表。</li>
-                <li>人工识别超时工单和长期未关闭工单。</li>
-                <li>统计结果生成慢，容易出现遗漏或口径不一致。</li>
-              </ul>
-            </div>
-            <div>
-              <h4>工单助手输出</h4>
-              <ul class="assistant-list">
-                <li>直接回答总数、类型、未关闭工单和负责人。</li>
-                <li>筛选处理时间超过 3 小时的工单。</li>
-                <li>识别长期停滞事项和管理介入点。</li>
-                <li>形成每日、每周和月度管理看板的基础。</li>
-              </ul>
-            </div>
-          </div>
-          <div class="evidence">
-            <div>
-              <h4>EM4043 实测依据</h4>
-              <p>处理时间超过 3 小时的工单有 6 张，超过 21 小时仍未解决的工单有 3 张，未完结工单累计占用时长约 93 小时。EM4043-2、3、8 是当前需要重点关注的事项。</p>
-            </div>
-            <div class="prompt"><strong>演示问题</strong>请生成 EM4043 项目当前工单管理报告，包含总数、状态、类型、负责人、超过 3 小时的工单、长期未解决事项和管理建议。</div>
-          </div>
-          <div class="hero-demo">
-            <div class="demo-frame">
-              <video controls loop muted playsinline preload="metadata" aria-label="EM4043 现场管理 Demo">
-                <source src="assets/t1-demo.mp4" type="video/mp4">
-                EM4043 现场管理 Demo
-              </video>
-            </div>
-          </div>
-        </article>
-
-        <article class="scenario" id="sm">
-          <div class="scenario-head">
-            <div class="scenario-code">SM</div>
-            <div>
-              <h3>业务场景4：项目月度工单报告</h3>
-              <p class="scenario-role">关注客户月报、项目趋势、服务质量、工单分类和资源投入情况。</p>
-            </div>
-            <span class="role-tag">客户汇报</span>
-          </div>
-          <div class="scenario-grid">
+          <!-- <div class="scenario-grid">
             <div>
               <h4>传统人工方式</h4>
               <ul>
@@ -1002,8 +908,195 @@
                 EM4043 SM Demo
               </video>
             </div>
-          </div>
+          </div> -->
         </article>
+                <article class="scenario" id="sm">
+          <div class="scenario-head">
+            <div class="scenario-code">T1</div>
+            <div>
+              <h3>业务场景6：工单总结</h3>
+              <p class="scenario-role">我刚刚接手该工单，我需要这个工单的对应进展，当前的状态，以及后续应该如何对应，请给出建议和风险提示。</p>
+            </div>
+            <span class="role-tag">T1工单总结</span>
+          </div>
+          <!-- <div class="scenario-grid">
+            <div>
+              <h4>传统人工方式</h4>
+              <ul>
+                <li>从 Jira 导出数据，再找 T1、T2 和负责人补充情况。</li>
+                <li>手工整理月度统计和处理时长。</li>
+                <li>制作 Word、Excel 和 PPT，反复确认口径。</li>
+                <li>报告制作占用大量时间，数据容易不一致。</li>
+              </ul>
+            </div>
+            <div>
+              <h4>工单助手输出</h4>
+              <ul class="assistant-list">
+                <li>按项目和统计周期生成工单总量及类型分布。</li>
+                <li>输出完成率、平均处理时长和超时工单。</li>
+                <li>提炼重点风险、主要处理人员和管理结论。</li>
+                <li>同时生成管理版与客户可读的月报初稿。</li>
+                <li>可调用 Skill 生成月报、季报等标准化报告。</li>
+              </ul>
+            </div>
+          </div>
+          <div class="evidence">
+            <div>
+              <h4>EM4043 实测依据</h4>
+              <p>已关闭或完成工单平均处理时长约 6 小时 37 分钟，未完结工单累计占用时长约 93 小时，目前存在 3 张超过 21 小时仍未解决的工单。这些数据可以直接转化为月报中的服务质量与风险结论。</p>
+            </div>
+            <div class="prompt"><strong>演示问题</strong>请生成 EM4043 项目月度服务报告，包含工单数量、类型分布、完成率、处理时长、长期未解决事项、主要风险和下月改进建议。</div>
+          </div>
+          <div class="hero-demo">
+            <div class="demo-frame">
+              <video controls loop muted playsinline preload="metadata" aria-label="EM4043 SM Demo">
+                <source src="assets/sm-demo.mp4" type="video/mp4">
+                EM4043 SM Demo
+              </video>
+            </div>
+          </div> -->
+        </article>
+        <article class="scenario" id="t2">
+          <div class="scenario-head">
+            <div class="scenario-code">T2</div>
+            <div>
+              <h3>业务场景2：工程师工单分析</h3>
+              <p class="scenario-role">负责故障的调查、分析和解决。请给我故障分析、故障调查建议、故障根因分析等以便我进行对应。</p>
+            </div>
+            <span class="role-tag">T2技术处理</span>
+          </div>
+          <!-- <div class="scenario-grid">
+            <div>
+              <h4>传统人工方式</h4>
+              <ul>
+                <li>手动检索历史工单、知识库和变更记录。</li>
+                <li>依靠个人经验判断可能根因。</li>
+                <li>人工比对相关设备、资产和近期变更。</li>
+                <li>排查、回滚和验证方案需要单独编写。</li>
+              </ul>
+            </div>
+            <div>
+              <h4>工单助手输出</h4>
+              <ul class="assistant-list">
+                <li>区分故障现象、已确认事实与推测内容。</li>
+                <li>关联历史案例、近期变更和影响范围。</li>
+                <li>生成排查步骤、处理方案和回滚方案。</li>
+                <li>列出变更后的验证项目。</li>
+                <li>通过 SOP 蒸馏，沉淀可复用的处理流程。</li>
+              </ul>
+            </div>
+          </div>
+          <div class="evidence">
+            <div>
+              <h4>EM4043 实测依据</h4>
+              <p>变更相关工单共有 10 张，占总工单数 66.7%。EM4043-2、3、8、9 分别涉及互联网访问阻止策略、工程师处理变更、黑名单阻止策略和关联工程师处理变更，适合联合分析处理进度与技术风险。</p>
+            </div>
+            <div class="prompt"><strong>演示问题</strong>请分析 EM4043-2、EM4043-3、EM4043-8 和 EM4043-9 的关联关系，区分已确认事实与推测，并输出排查步骤、处理建议和回滚方案。</div>
+          </div>
+          <div class="hero-demo">
+            <div class="demo-frame">
+              <video controls loop muted playsinline preload="metadata" aria-label="EM4043 T2 Demo">
+                <source src="assets/t2-demo.mp4" type="video/mp4">
+                EM4043 T2 Demo
+              </video>
+            </div>
+          </div> -->
+        </article>
+        
+        <article class="scenario" id="现场管理">
+          <div class="scenario-head">
+            <div class="scenario-code">现场管理</div>
+            <div>
+              <h3>业务场景4：管理者工单督办</h3>
+              <p class="scenario-role">我需要知道当前所有未解决、未关闭的工单和子任务。我想知道每个工单的进展、SLA情况、风险点、后续对应，以及紧急程度。表格方式呈现，以便我对工单进行管理、督促工单推进。</p>
+            </div>
+            <span class="role-tag">现场管理者</span>
+          </div>
+          <!-- <div class="scenario-grid">
+            <div>
+              <h4>传统人工方式</h4>
+              <ul>
+                <li>找不同负责人询问状态，再手动汇总。</li>
+                <li>导出 Jira 数据后制作统计表。</li>
+                <li>人工识别超时工单和长期未关闭工单。</li>
+                <li>统计结果生成慢，容易出现遗漏或口径不一致。</li>
+              </ul>
+            </div>
+            <div>
+              <h4>工单助手输出</h4>
+              <ul class="assistant-list">
+                <li>直接回答总数、类型、未关闭工单和负责人。</li>
+                <li>筛选处理时间超过 3 小时的工单。</li>
+                <li>识别长期停滞事项和管理介入点。</li>
+                <li>形成每日、每周和月度管理看板的基础。</li>
+              </ul>
+            </div>
+          </div>
+          <div class="evidence">
+            <div>
+              <h4>EM4043 实测依据</h4>
+              <p>处理时间超过 3 小时的工单有 6 张，超过 21 小时仍未解决的工单有 3 张，未完结工单累计占用时长约 93 小时。EM4043-2、3、8 是当前需要重点关注的事项。</p>
+            </div>
+            <div class="prompt"><strong>演示问题</strong>请生成 EM4043 项目当前工单管理报告，包含总数、状态、类型、负责人、超过 3 小时的工单、长期未解决事项和管理建议。</div>
+          </div>
+          <div class="hero-demo">
+            <div class="demo-frame">
+              <video controls loop muted playsinline preload="metadata" aria-label="EM4043 现场管理 Demo">
+                <source src="assets/t1-demo.mp4" type="video/mp4">
+                EM4043 现场管理 Demo
+              </video>
+            </div>
+          </div> -->
+        </article>
+
+        <article class="scenario" id="sm">
+          <div class="scenario-head">
+            <div class="scenario-code">SM</div>
+            <div>
+              <h3>业务场景5：项目月度工单报告</h3>
+              <p class="scenario-role">我需要对某个项目工单进行月度统计给客户，我需要按类别统计，包括工单编号、概要、开单时间、恢复时间、时长等，总结对应内容，给出分析建议等。根据ITIL的问题管理角度进行归纳总结。</p>
+            </div>
+            <span class="role-tag">月度工单报告</span>
+          </div>
+          <!-- <div class="scenario-grid">
+            <div>
+              <h4>传统人工方式</h4>
+              <ul>
+                <li>从 Jira 导出数据，再找 T1、T2 和负责人补充情况。</li>
+                <li>手工整理月度统计和处理时长。</li>
+                <li>制作 Word、Excel 和 PPT，反复确认口径。</li>
+                <li>报告制作占用大量时间，数据容易不一致。</li>
+              </ul>
+            </div>
+            <div>
+              <h4>工单助手输出</h4>
+              <ul class="assistant-list">
+                <li>按项目和统计周期生成工单总量及类型分布。</li>
+                <li>输出完成率、平均处理时长和超时工单。</li>
+                <li>提炼重点风险、主要处理人员和管理结论。</li>
+                <li>同时生成管理版与客户可读的月报初稿。</li>
+                <li>可调用 Skill 生成月报、季报等标准化报告。</li>
+              </ul>
+            </div>
+          </div>
+          <div class="evidence">
+            <div>
+              <h4>EM4043 实测依据</h4>
+              <p>已关闭或完成工单平均处理时长约 6 小时 37 分钟，未完结工单累计占用时长约 93 小时，目前存在 3 张超过 21 小时仍未解决的工单。这些数据可以直接转化为月报中的服务质量与风险结论。</p>
+            </div>
+            <div class="prompt"><strong>演示问题</strong>请生成 EM4043 项目月度服务报告，包含工单数量、类型分布、完成率、处理时长、长期未解决事项、主要风险和下月改进建议。</div>
+          </div>
+          <div class="hero-demo">
+            <div class="demo-frame">
+              <video controls loop muted playsinline preload="metadata" aria-label="EM4043 SM Demo">
+                <source src="assets/sm-demo.mp4" type="video/mp4">
+                EM4043 SM Demo
+              </video>
+            </div>
+          </div> -->
+        </article>
+
+
       </div>
     </section>
 
