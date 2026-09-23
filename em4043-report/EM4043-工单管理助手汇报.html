@@ -431,6 +431,8 @@
 
     .comparison { margin-top: 22px; }
     .comparison-visual { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 18px; align-items: center; }
+    .comparison-visual.single { grid-template-columns: minmax(0, 1fr); }
+    .comparison-visual.single .comparison-figure { width: min(100%, 960px); justify-self: center; }
     .comparison-figure { margin: 0; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); box-shadow: 0 8px 24px rgba(23, 33, 43, .08); }
     .comparison-figure img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 10px; }
     .comparison-figure figcaption { padding: 12px 4px 2px; color: var(--ink-soft); font-size: 14px; font-weight: 800; text-align: center; }
@@ -599,12 +601,7 @@
           <p>价值不在于把每一步都自动化，而在于让每个角色更快得到适合自己工作的结果。</p>
         </div>
       </div>
-      <div class="comparison-visual" aria-label="传统人工处理与 AI 协作处理对比">
-        <figure class="comparison-figure">
-          <img src="assets/human.png" alt="人工处理工单：人员独立处理 CSC 工单">
-          <figcaption>传统人工处理</figcaption>
-        </figure>
-        <div class="comparison-arrow" aria-hidden="true">→</div>
+      <div class="comparison-visual single" aria-label="AI 协作处理工单">
         <figure class="comparison-figure">
           <img src="assets/humanAI.png" alt="AI 协作处理工单：人员与 AI 工单助手协同工作">
           <figcaption>AI 协作处理</figcaption>
