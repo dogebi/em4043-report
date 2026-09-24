@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSC 核心架构技术说明会 · Agent 引擎与平台</title>
+<style>
+  :root{
+    --bg:#eef1f6; --panel:#ffffff; --ink:#1f2733; --muted:#5b6675; --line:#dde3ec;
+    --brand:#274690; --brand2:#3b5bdb; --accent:#0ea5e9;
+    --agent:#4338ca; --agent-bg:#eef2ff;
+    --session:#0e7490; --session-bg:#ecfeff;
+    --mcp:#c2410c; --mcp-bg:#fff7ed;
+    --skill:#be185d; --skill-bg:#fdf2f8;
+    --memory:#7c3aed; --memory-bg:#f5f3ff;
+    --kb:#15803d; --kb-bg:#f0fdf4;
+    --ext:#475569; --ext-bg:#f1f5f9;
+    --esm:#0f766e; --esm-bg:#f0fdfa;
+    --warn:#b45309; --warn-bg:#fffbeb;
+    --shadow:0 1px 2px rgba(16,24,40,.05),0 6px 18px rgba(16,24,40,.07);
+    --shadow-lg:0 10px 40px rgba(16,24,40,.12);
+    --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    line-height:1.72;font-size:15px;-webkit-font-smoothing:antialiased;}
+  a{color:var(--brand2);text-decoration:none;}
+  a:hover{text-decoration:underline;}
+  code{font-family:var(--mono);background:#eef2f8;color:#b03060;padding:1.5px 6px;border-radius:5px;font-size:.86em;}
+  .mono{font-family:var(--mono);}
+
+  /* ===== Nav ===== */
+  nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);}
+  .nav-inner{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:18px;padding:0 26px;height:56px;}
+  .brand{font-weight:800;color:var(--brand);font-size:15px;letter-spacing:.3px;white-space:nowrap;display:flex;align-items:center;gap:8px;}
+  .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--brand2);box-shadow:0 0 0 4px var(--agent-bg);}
+  .nav-links{display:flex;gap:4px;margin-left:auto;overflow-x:auto;scrollbar-width:none;}
+  .nav-links::-webkit-scrollbar{display:none;}
+  .nav-links a{color:var(--muted);font-size:13.5px;font-weight:600;padding:8px 12px;border-radius:8px;white-space:nowrap;transition:.15s;}
+  .nav-links a:hover{color:var(--brand);background:#f1f4fb;text-decoration:none;}
+  .nav-links a.active{color:#fff;background:var(--brand2);}
+
+  /* ===== Hero ===== */
+  .hero{background:linear-gradient(135deg,#1e2f63 0%,#274690 45%,#3b5bdb 100%);color:#fff;padding:64px 26px 56px;position:relative;overflow:hidden;}
+  .hero::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 82% 20%,rgba(14,165,233,.35),transparent 45%);pointer-events:none;}
+  .hero-inner{max-width:1180px;margin:0 auto;position:relative;z-index:2;}
+  .hero .kicker{font-size:13px;letter-spacing:2px;text-transform:uppercase;color:#b9c6ef;font-weight:700;}
+  .hero h1{font-size:38px;line-height:1.2;margin:14px 0 12px;font-weight:800;letter-spacing:.5px;}
+  .hero p.sub{font-size:16.5px;color:#d6defc;max-width:760px;margin:0;}
+  .hero .meta{display:flex;gap:22px;flex-wrap:wrap;margin-top:26px;font-size:13px;color:#c3cdf2;}
+  .hero .meta b{display:block;font-size:18px;color:#fff;font-weight:800;}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:28px;}
+  .legend span{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:#e6ebff;background:rgba(255,255,255,.1);padding:6px 12px;border-radius:20px;}
+  .legend i{width:11px;height:11px;border-radius:3px;display:inline-block;}
+
+  /* ===== Layout ===== */
+  main{max-width:1180px;margin:0 auto;padding:0 26px 90px;}
+  section.chapter{padding-top:56px;scroll-margin-top:70px;}
+  .ch-head{display:flex;align-items:flex-start;gap:16px;margin-bottom:8px;}
+  .ch-num{flex:none;width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+    font-size:22px;font-weight:800;color:#fff;background:var(--brand);box-shadow:var(--shadow);}
+  .ch-head h2{font-size:27px;margin:4px 0 0;font-weight:800;letter-spacing:.3px;}
+  .ch-head .ch-tag{font-size:13px;color:var(--muted);font-weight:600;}
+  .ch-intro{color:var(--muted);max-width:860px;margin:14px 0 26px;font-size:15px;}
+  h3.block{font-size:19px;font-weight:800;margin:34px 0 14px;padding-left:13px;position:relative;letter-spacing:.2px;}
+  h3.block::before{content:"";position:absolute;left:0;top:3px;bottom:3px;width:5px;border-radius:4px;background:var(--brand2);}
+  h4{font-size:15.5px;font-weight:750;margin:20px 0 8px;color:#2a3444;}
+  p{margin:10px 0;}
+  ul.tight{margin:8px 0;padding-left:22px;}
+  ul.tight li{margin:5px 0;}
+
+  /* ===== Cards / grids ===== */
+  .grid{display:grid;gap:16px;}
+  .g2{grid-template-columns:repeat(2,1fr);}
+  .g3{grid-template-columns:repeat(3,1fr);}
+  .g4{grid-template-columns:repeat(4,1fr);}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px;box-shadow:var(--shadow);}
+  .card h4{margin-top:0;}
+  .card .ic{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;margin-bottom:10px;}
+  .lead{font-size:15.5px;color:#3a4453;}
+
+  /* ===== Callouts ===== */
+  .note{border-radius:12px;padding:13px 16px 13px 15px;margin:16px 0;font-size:14px;border:1px solid;display:flex;gap:11px;}
+  .note .n-ic{flex:none;font-size:17px;line-height:1.4;}
+  .note b{display:block;font-size:12.5px;letter-spacing:.4px;text-transform:uppercase;margin-bottom:3px;}
+  .n-brand{background:#eef4ff;border-color:#c9dbff;color:#1e3a8a;}
+  .n-warn{background:var(--warn-bg);border-color:#fde7b3;color:#7c3a06;}
+  .n-ok{background:var(--kb-bg);border-color:#c4f0d0;color:#14532d;}
+  .n-info{background:var(--session-bg);border-color:#b6ecf5;color:#155e75;}
+
+  /* ===== Table ===== */
+  .tbl{width:100%;border-collapse:collapse;background:var(--panel);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);font-size:13.5px;margin:14px 0;}
+  .tbl th{background:#f4f7fb;color:#33405a;text-align:left;padding:11px 14px;font-weight:750;border-bottom:2px solid var(--line);font-size:12.8px;letter-spacing:.2px;}
+  .tbl td{padding:10px 14px;border-bottom:1px solid #edf1f6;vertical-align:top;color:#333c49;}
+  .tbl tr:last-child td{border-bottom:none;}
+  .tbl tr:nth-child(even) td{background:#fafbfd;}
+  .tbl .c{font-family:var(--mono);font-size:12.5px;color:#b03060;background:#f4f0f6;padding:2px 6px;border-radius:5px;}
+
+  /* ===== Pills / tags ===== */
+  .pill{display:inline-block;font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;margin:2px 4px 2px 0;}
+  .steps{counter-reset:s;list-style:none;padding:0;margin:14px 0;}
+  .steps li{counter-increment:s;position:relative;padding:0 0 14px 46px;}
+  .steps li::before{content:counter(s);position:absolute;left:0;top:-2px;width:30px;height:30px;border-radius:9px;
+    background:var(--brand2);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:var(--shadow);}
+  .steps li::after{content:"";position:absolute;left:14px;top:30px;bottom:-2px;width:2px;background:var(--line);}
+  .steps li:last-child::after{display:none;}
+  .steps li b{color:var(--brand);font-weight:750;}
+
+  /* ===== Diagram wrap ===== */
+  .fig{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:var(--shadow);margin:18px 0;overflow-x:auto;}
+  .fig .cap{font-size:12.5px;color:var(--muted);text-align:center;margin-top:10px;font-weight:600;letter-spacing:.3px;}
+  svg{display:block;margin:0 auto;max-width:100%;height:auto;}
+  .svgbox{width:100%;min-width:720px;}
+
+  /* code block */
+  pre{background:#0f1a2e;color:#d7e2f5;border-radius:12px;padding:15px 17px;overflow-x:auto;font-family:var(--mono);font-size:12.8px;line-height:1.65;margin:14px 0;border:1px solid #1d2b45;}
+  pre .cm{color:#6b7f9e;} pre .k{color:#7dd3fc;} pre .s{color:#a7f3d0;} pre .n{color:#fca5a5;}
+
+  .split{display:grid;grid-template-columns:1fr;gap:14px;}
+  .kv{display:flex;gap:8px;font-size:13.5px;margin:4px 0;}
+  .kv .k{flex:none;color:var(--muted);min-width:96px;font-weight:600;}
+  .mini{font-size:12.5px;color:var(--muted);}
+  .badge{font-size:11px;font-weight:800;padding:2px 8px;border-radius:6px;letter-spacing:.3px;}
+
+  footer{max-width:1180px;margin:0 auto;padding:30px 26px 60px;color:var(--muted);font-size:12.5px;border-top:1px solid var(--line);margin-top:40px;}
+  .progress{position:fixed;top:56px;left:0;height:3px;background:linear-gradient(90deg,var(--brand2),var(--accent));z-index:60;width:0;transition:width .1s;}
+  .top-btn{position:fixed;right:24px;bottom:24px;width:44px;height:44px;border-radius:12px;background:var(--brand);color:#fff;border:none;
+    font-size:19px;cursor:pointer;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:.25s;z-index:70;}
+  .top-btn.show{opacity:1;pointer-events:auto;}
+  .top-btn:hover{background:var(--brand2);transform:translateY(-3px);}
+
+  @media(max-width:860px){
+    .g2,.g3,.g4{grid-template-columns:1fr;}
+    .hero h1{font-size:29px;}
+    .nav-links{display:none;}
+  }
+</style>
+</head>
+<body>
+<div class="progress" id="prog"></div>
+
+<nav>
+  <div class="nav-inner">
+    <div class="brand"><span class="dot"></span>CSC · 核心架构说明</div>
+    <div class="nav-links">
+      <a href="#overview">系统总览</a>
+      <a href="#agent">① Agent 编排</a>
+      <a href="#session">② 会话启动链路</a>
+      <a href="#extend">③ 扩展实现</a>
+      <a href="#dataflow">数据流 & 存储</a>
+      <a href="#esm">ESM 平台侧</a>
+      <a href="#appendix">附录</a>
+    </div>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="kicker">Technical Briefing · 技术说明会材料</div>
+    <h1>CSC 双核心仓库架构解析<br>Agent 引擎（Python）× 平台（ESM/PHP）</h1>
+    <p class="sub">面向客户与内部团队的技术说明会材料。聚焦两大核心：<b>① Agent 编排</b>（主/子 Agent、MCP、SKILL、装载逻辑）与 <b>② 会话启动链路</b>（提示词装配、模型参数、工具挂载、上下文/记忆/知识蒸馏），并补充其它关键加载与编排实现。</p>
+    <div class="meta">
+      <div><b>worker-agent-engine</b>纯 Agent Worker 引擎（Python/asyncio）</div>
+      <div><b>ESM · AppAgent</b>平台 / 管理 / 任务投递（Laravel）</div>
+      <div><b>MySQL · PostgreSQL · Redis</b>配置 / 会话记忆 / 队列推送</div>
+    </div>
+    <div class="legend">
+      <span><i style="background:#4338ca"></i>Agent 编排</span>
+      <span><i style="background:#0e7490"></i>会话启动</span>
+      <span><i style="background:#c2410c"></i>MCP 工具</span>
+      <span><i style="background:#be185d"></i>SKILL 技能</span>
+      <span><i style="background:#7c3aed"></i>记忆系统</span>
+      <span><i style="background:#15803d"></i>知识检索</span>
+      <span><i style="background:#0f766e"></i>ESM 平台</span>
+    </div>
+  </div>
+</div>
+
+<main>
+
+<!-- ============ OVERVIEW ============ -->
+<section class="chapter" id="overview">
+  <div class="ch-head">
+    <div class="ch-num" style="background:#334155;">★</div>
+    <div><div class="ch-tag">Chapter 0</div><h2>系统总览与架构分层</h2></div>
+  </div>
+  <p class="ch-intro">系统采用「<b>纯 Worker 引擎 + 平台解耦</b>」的架构。Python 引擎（<span class="mono">worker-agent-engine</span>）不对外暴露 HTTP，而是通过 <b>Redis Stream 接收任务、Redis Pub/Sub 推送结果</b>；ESM 平台（<span class="mono">app/AppAgent</span>）负责会话管理、配置管理与任务投递。二者通过 Redis 与共享数据库协作，实现低耦合、可水平扩展。</p>
+
+  <div class="fig">
+    <div class="svgbox">
+    <svg viewBox="0 0 1120 640" font-family="-apple-system,PingFang SC,Microsoft YaHei,sans-serif">
+      <defs>
+        <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#94a3b8"/></marker>
+        <marker id="arb" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#3b5bdb"/></marker>
+      </defs>
+      <!-- ESM layer -->
+      <rect x="20" y="20" width="1080" height="118" rx="14" fill="#f0fdfa" stroke="#99f6e4"/>
+      <text x="40" y="46" font-size="15" font-weight="800" fill="#0f766e">ESM 平台（Laravel / PHP）</text>
+      <text x="40" y="64" font-size="11" fill="#4b7a76">会话管理 · 配置管理 · 任务投递 · SSE 转发 · 前端</text>
+      <g font-size="12" font-weight="700">
+        <rect x="45" y="78" width="150" height="44" rx="9" fill="#fff" stroke="#5eead4"/><text x="120" y="97" text-anchor="middle" fill="#0f766e">SessionService</text><text x="120" y="113" text-anchor="middle" fill="#4b7a76" font-weight="500">sendMessage / dispatch</text>
+        <rect x="207" y="78" width="140" height="44" rx="9" fill="#fff" stroke="#5eead4"/><text x="277" y="97" text-anchor="middle" fill="#0f766e">MessageController</text><text x="277" y="113" text-anchor="middle" fill="#4b7a76" font-weight="500">Chat UI / 表单</text>
+        <rect x="359" y="78" width="160" height="44" rx="9" fill="#fff" stroke="#5eead4"/><text x="439" y="97" text-anchor="middle" fill="#0f766e">SSE Stream</text><text x="439" y="113" text-anchor="middle" fill="#4b7a76" font-weight="500">streamEventsFromRedis</text>
+        <rect x="531" y="78" width="150" height="44" rx="9" fill="#fff" stroke="#5eead4"/><text x="606" y="97" text-anchor="middle" fill="#0f766e">Agent / Plan 配置</text><text x="606" y="113" text-anchor="middle" fill="#4b7a76" font-weight="500">智能体 · 任务方案</text>
+        <rect x="693" y="78" width="140" height="44" rx="9" fill="#fff" stroke="#5eead4"/><text x="763" y="97" text-anchor="middle" fill="#0f766e">IssueService</text><text x="763" y="113" text-anchor="middle" fill="#4b7a76" font-weight="500">工单 · 阶段流转</text>
+        <rect x="845" y="78" width="140" height="44" rx="9" fill="#fff" stroke="#5eead4"/><text x="915" y="97" text-anchor="middle" fill="#0f766e">FileDriverService</text><text x="915" y="113" text-anchor="middle" fill="#4b7a76" font-weight="500">工作目录 / 版本</text>
+      </g>
+      <!-- arrows to redis -->
+      <line x1="180" y1="138" x2="300" y2="176" stroke="#3b5bdb" stroke-width="2.4" marker-end="url(#arb)"/>
+      <text x="205" y="162" font-size="11.5" fill="#3b5bdb" font-weight="700">XADD 任务</text>
+      <line x1="470" y1="138" x2="430" y2="176" stroke="#0e7490" stroke-width="2.4" marker-end="url(#ar)"/>
+      <text x="440" y="162" font-size="11.5" fill="#0e7490" font-weight="700">订阅 SSE</text>
+      <!-- Redis hub -->
+      <rect x="230" y="176" width="360" height="56" rx="12" fill="#fff7ed" stroke="#fdba74"/>
+      <text x="410" y="200" text-anchor="middle" font-size="15" font-weight="800" fill="#c2410c">Redis 7</text>
+      <text x="410" y="218" text-anchor="middle" font-size="11.5" fill="#c2410c">Stream 队列（agent/memory/distill）+ Pub/Sub 事件 + 缓存</text>
+      <!-- Engine layer -->
+      <rect x="20" y="252" width="760" height="368" rx="14" fill="#f8faff" stroke="#c7d2fe"/>
+      <text x="40" y="278" font-size="15" font-weight="800" fill="#274690">Agent Worker 引擎（纯 asyncio，无 HTTP）</text>
+      <text x="40" y="296" font-size="11" fill="#5b6675">worker_main.py(Supervisor) → agent / memory / distill 子进程</text>
+      <!-- consume -->
+      <line x1="360" y1="232" x2="300" y2="312" stroke="#3b5bdb" stroke-width="2.4" marker-end="url(#arb)"/>
+      <text x="316" y="268" font-size="11.5" fill="#3b5bdb" font-weight="700">TaskWorker 消费</text>
+      <g font-size="12" font-weight="700">
+        <rect x="45" y="312" width="150" height="56" rx="9" fill="#fff" stroke="#a5b4fc"/><text x="120" y="336" text-anchor="middle" fill="#4338ca">AgentEngine</text><text x="120" y="352" text-anchor="middle" fill="#64748b" font-weight="500" font-size="10.5">execute / 并行检索 / 压缩</text>
+        <rect x="210" y="312" width="160" height="56" rx="9" fill="#fff" stroke="#a5b4fc"/><text x="290" y="336" text-anchor="middle" fill="#4338ca">MasterAgent</text><text x="290" y="352" text-anchor="middle" fill="#64748b" font-weight="500" font-size="10.5">多轮工具循环 · 派发</text>
+        <rect x="385" y="312" width="130" height="56" rx="9" fill="#fff" stroke="#a5b4fc"/><text x="450" y="336" text-anchor="middle" fill="#4338ca">Executor + DAG</text><text x="450" y="352" text-anchor="middle" fill="#64748b" font-weight="500" font-size="10.5">分层并行 · 子Agent</text>
+        <rect x="530" y="312" width="140" height="56" rx="9" fill="#fff" stroke="#a5b4fc"/><text x="600" y="336" text-anchor="middle" fill="#4338ca">Sub / Audit Agent</text><text x="600" y="352" text-anchor="middle" fill="#64748b" font-weight="500" font-size="10.5">专项任务 · 阶段审计</text>
+      </g>
+      <g font-size="11.5" font-weight="700">
+        <rect x="45" y="384" width="150" height="48" rx="9" fill="#fff7ed" stroke="#fdba74"/><text x="120" y="405" text-anchor="middle" fill="#c2410c">MCP Client</text><text x="120" y="421" text-anchor="middle" fill="#9a5b2a" font-weight="500" font-size="10.5">本地 + 远程连接器</text>
+        <rect x="207" y="384" width="150" height="48" rx="9" fill="#eef2ff" stroke="#c7d2fe"/><text x="282" y="405" text-anchor="middle" fill="#4338ca">SKILL 加载器</text><text x="282" y="421" text-anchor="middle" fill="#64748b" font-weight="500" font-size="10.5">摘要注入 + 按需读</text>
+        <rect x="369" y="384" width="150" height="48" rx="9" fill="#f0fdf4" stroke="#bbf7d0"/><text x="444" y="405" text-anchor="middle" fill="#15803d">RAG / kb_select</text><text x="444" y="421" text-anchor="middle" fill="#4b7a5a" font-weight="500" font-size="10.5">知识库自动选型</text>
+        <rect x="531" y="384" width="139" height="48" rx="9" fill="#f5f3ff" stroke="#ddd6fe"/><text x="600" y="405" text-anchor="middle" fill="#7c3aed">MemoryPG</text><text x="600" y="421" text-anchor="middle" fill="#6d5fa0" font-weight="500" font-size="10.5">三层记忆检索</text>
+      </g>
+      <g font-size="11.5" font-weight="700">
+        <rect x="45" y="448" width="220" height="48" rx="9" fill="#fff" stroke="#c7d2fe"/><text x="155" y="469" text-anchor="middle" fill="#274690">LLMProvider (LiteLLM)</text><text x="155" y="485" text-anchor="middle" fill="#64748b" font-weight="500" font-size="10.5">模型参数 · 思考档位 · 流式</text>
+        <rect x="277" y="448" width="190" height="48" rx="9" fill="#fff" stroke="#c7d2fe"/><text x="372" y="469" text-anchor="middle" fill="#274690">ContextManager</text><text x="372" y="485" text-anchor="middle" fill="#64748b" font-weight="500" font-size="10.5">长对话摘要压缩</text>
+        <rect x="479" y="448" width="190" height="48" rx="9" fill="#fff" stroke="#c7d2fe"/><text x="574" y="469" text-anchor="middle" fill="#274690">AgentLoader</text><text x="574" y="485" text-anchor="middle" fill="#64748b" font-weight="500" font-size="10.5">按需查库（6 条 SQL）</text>
+      </g>
+      <rect x="45" y="516" width="624" height="80" rx="10" fill="#fff" stroke="#e2e8f0"/>
+      <text x="65" y="538" font-size="11.5" font-weight="800" fill="#475569">内置工具（MCPToolRegistry）</text>
+      <g font-size="11" fill="#334155" font-family="var(--mono)">
+        <text x="65" y="558">knowledge_search · list_knowledge_bases · report_generate</text>
+        <text x="65" y="576">session_history · request_user_input · todo_manage</text>
+        <text x="65" y="594">internet_search · web_scraper · 文件操作(9) · 远程MCP连接器 · dispatch_sub_task · load_skill_detail</text>
+      </g>
+      <!-- right: side workers + storage -->
+      <rect x="800" y="252" width="300" height="150" rx="14" fill="#f1f5f9" stroke="#cbd5e1"/>
+      <text x="820" y="278" font-size="14" font-weight="800" fill="#475569">独立 Worker</text>
+      <g font-size="11.5">
+        <rect x="820" y="292" width="260" height="30" rx="8" fill="#fff" stroke="#cbd5e1"/><text x="950" y="312" text-anchor="middle" fill="#475569" font-weight="700">Memory Worker · 记忆自动提取（独立轻量模型）</text>
+        <rect x="820" y="330" width="260" height="30" rx="8" fill="#fff" stroke="#cbd5e1"/><text x="950" y="350" text-anchor="middle" fill="#475569" font-weight="700">Distill Worker · 知识蒸馏 SOP 生成</text>
+        <text x="950" y="388" text-anchor="middle" fill="#94a3b8" font-size="10.5">各自独立 Stream + ConsumerGroup + 心跳</text>
+      </g>
+      <!-- storage -->
+      <rect x="800" y="422" width="300" height="198" rx="14" fill="#fff" stroke="#e2e8f0"/>
+      <text x="820" y="448" font-size="14" font-weight="800" fill="#334155">多源存储</text>
+      <g font-size="11.5">
+        <rect x="820" y="462" width="260" height="44" rx="9" fill="#eef2ff" stroke="#c7d2fe"/><text x="835" y="481" fill="#4338ca" font-weight="700">MySQL 8.0</text><text x="835" y="497" fill="#64748b">业务配置 aigc_work_*</text>
+        <rect x="820" y="514" width="260" height="44" rx="9" fill="#f0fdf4" stroke="#bbf7d0"/><text x="835" y="533" fill="#15803d" font-weight="700">PostgreSQL 16</text><text x="835" y="549" fill="#4b7a5a">会话 · 记忆 · 全文检索(tsvector)</text>
+        <rect x="820" y="566" width="260" height="44" rx="9" fill="#fff7ed" stroke="#fdba74"/><text x="835" y="585" fill="#c2410c" font-weight="700">Redis 7</text><text x="835" y="601" fill="#9a5b2a">队列 · Pub/Sub · 缓存 · 心跳</text>
+      </g>
+      <line x1="780" y1="440" x2="800" y2="520" stroke="#94a3b8" stroke-width="2" marker-end="url(#ar)"/>
+      <line x1="780" y1="300" x2="800" y2="330" stroke="#94a3b8" stroke-width="2" marker-end="url(#ar)"/>
+    </svg>
+    </div>
+    <div class="cap">图 0 · 总体架构：ESM 平台 ⇄ Redis ⇄ Python Agent 引擎（含独立 Memory / Distill Worker）</div>
+  </div>
+
+  <div class="grid g3">
+    <div class="card"><div class="ic" style="background:var(--session-bg)">📨</div><h4>纯 Worker / 任务驱动</h4><p class="mini">不依赖 FastAPI，<span class="mono">asyncio</span> 直接管理生命周期；外部系统经 <span class="mono">XADD</span> 投递任务，Worker 消费执行，结果经 Pub/Sub 实时推送。</p></div>
+    <div class="card"><div class="ic" style="background:var(--agent-bg)">🧠</div><h4>Agent 协同</h4><p class="mini">Master 理解意图、调用工具并规划；Sub 执行专项任务；Audit 阶段审计。支持 DAG 分层并行、取消、暂停/恢复、文件版本。</p></div>
+    <div class="card"><div class="ic" style="background:var(--kb-bg)">📚</div><h4>知识 + 记忆 + 蒸馏</h4><p class="mini">RAG 知识库自动选型、三层记忆（issue/session/user）跨会话增强、知识蒸馏 SOP 流水线，三者构成上下文供给体系。</p></div>
+  </div>
+</section>
+
+<!-- ============ AGENT ============ -->
+<section class="chapter" id="agent">
+  <div class="ch-head">
+    <div class="ch-num" style="background:var(--agent);">1</div>
+    <div><div class="ch-tag">Chapter 1 · Agent 编排</div><h2>主/子 Agent、MCP 接入与 SKILL 编排</h2></div>
+  </div>
+  <p class="ch-intro">本章回答「一个 Agent 是如何被配置出来、如何装载、如何调用工具与技能、如何派发子任务」的核心问题。</p>
+
+  <!-- 1.1 hierarchy -->
+  <h3 class="block">1.1 主 / 子 / 审计 Agent 分层与协作</h3>
+  <p>系统内置三种 Agent 类型（存于 <span class="mono">aigc_work_agents.type</span>），协作关系如下：</p>
+  <div class="fig">
+    <div class="svgbox" style="min-width:640px">
+    <svg viewBox="0 0 1080 380" font-family="-apple-system,PingFang SC,Microsoft YaHei,sans-serif">
+      <defs><marker id="a1" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#4338ca"/></marker>
+      <marker id="a2" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#7c3aed"/></marker></defs>
+      <rect x="400" y="24" width="280" height="66" rx="13" fill="#4338ca"/>
+      <text x="540" y="52" text-anchor="middle" font-size="17" font-weight="800" fill="#fff">Master Agent（主）</text>
+      <text x="540" y="73" text-anchor="middle" font-size="11.5" fill="#dfe3ff">理解意图 · 调工具 · 规划 · 派发 · 汇总</text>
+      <!-- sub agents -->
+      <g font-size="12.5" font-weight="700">
+        <rect x="120" y="170" width="220" height="60" rx="11" fill="#eef2ff" stroke="#a5b4fc"/><text x="230" y="196" text-anchor="middle" fill="#4338ca">Sub Agent A（如：DB 诊断）</text><text x="230" y="214" text-anchor="middle" fill="#64748b" font-weight="500" font-size="10.5">专项执行 · 最多 5 轮工具循环</text>
+        <rect x="370" y="170" width="220" height="60" rx="11" fill="#eef2ff" stroke="#a5b4fc"/><text x="480" y="196" text-anchor="middle" fill="#4338ca">Sub Agent B（如：网络诊断）</text><text x="480" y="214" text-anchor="middle" fill="#64748b" font-weight="500" font-size="10.5">专项执行 · 继承 Master 凭据</text>
+        <rect x="620" y="170" width="220" height="60" rx="11" fill="#eef2ff" stroke="#a5b4fc"/><text x="730" y="196" text-anchor="middle" fill="#4338ca">Sub Agent C（…）</text><text x="730" y="214" text-anchor="middle" fill="#64748b" font-weight="500" font-size="10.5">按 DAG 依赖并行/串行</text>
+      </g>
+      <line x1="470" y1="90" x2="255" y2="170" stroke="#4338ca" stroke-width="2.2" marker-end="url(#a1)"/>
+      <line x1="540" y1="90" x2="480" y2="170" stroke="#4338ca" stroke-width="2.2" marker-end="url(#a1)"/>
+      <line x1="610" y1="90" x2="725" y2="170" stroke="#4338ca" stroke-width="2.2" marker-end="url(#a1)"/>
+      <text x="540" y="140" text-anchor="middle" font-size="12" font-weight="700" fill="#4338ca">dispatch_sub_task 虚拟工具（唯一派发通道）</text>
+      <!-- audit -->
+      <rect x="880" y="40" width="180" height="54" rx="11" fill="#f5f3ff" stroke="#ddd6fe"/>
+      <text x="970" y="64" text-anchor="middle" font-size="13" font-weight="800" fill="#7c3aed">Audit Agent（审计）</text>
+      <text x="970" y="82" text-anchor="middle" font-size="10.5" fill="#6d5fa0" font-weight="500">阶段完成质量评估</text>
+      <path d="M 680 60 Q 800 60 878 64" fill="none" stroke="#7c3aed" stroke-width="2.2" stroke-dasharray="5 4" marker-end="url(#a2)"/>
+      <text x="790" y="50" font-size="11" fill="#7c3aed" font-weight="700">阶段审计</text>
+      <!-- executor note -->
+      <rect x="120" y="272" width="720" height="86" rx="12" fill="#fff" stroke="#c7d2fe"/>
+      <text x="140" y="296" font-size="12.5" font-weight="800" fill="#274690">Executor（执行器）— 按 DAG 拓扑调度子 Agent</text>
+      <g font-size="11.5" fill="#3a4453">
+        <text x="140" y="318">· Kahn 拓扑排序分组 → 同层无依赖并行，层间串行；DFS 三色标记检测依赖环</text>
+        <text x="140" y="337">· Semaphore 并发上限 AGENT_MAX_CONCURRENT=5 · 单 Sub 超时 AGENT_TASK_TIMEOUT=100s</text>
+        <text x="140" y="356">· 失败重规划 _MAX_REPLAN_ATTEMPTS=1 · 每层/每轮工具循环前检测取消标记</text>
+      </g>
+    </svg>
+    </div>
+    <div class="cap">图 1 · 主/子/审计 Agent 协作：dispatch_sub_task 是唯一派发通道（不再从回复文本正则解析计划）</div>
+  </div>
+  <div class="note n-brand"><div class="n-ic">🔑</div><div><b>关键设计</b>子 Agent 派发已从「解析回复文本」改为「模型显式调用 <span class="mono">dispatch_sub_task</span> 工具」。模型不调用该工具即直接返回最终回答，避免旧兜底机制导致的误派发。子 Agent 配置按 name 加载（<span class="mono">load_agent_by_name</span>），继承 Master 的模型凭据。</div></div>
+
+  <!-- 1.2 loading -->
+  <h3 class="block">1.2 LLM 启动装载逻辑（AgentLoader 按需查库）</h3>
+  <p>Agent 配置<b>不在启动时全量加载</b>，而是运行时由 <span class="mono">load_agent(agent_id)</span> 在<b>同一个 DB session 内完成 6 条 SQL</b>，返回 <span class="mono">AgentSnapshot</span>（AgentConfig + llm_override + tool_names + connectors + skills）。这是整个编排的装载入口：</p>
+  <div class="fig">
+    <div class="svgbox" style="min-width:760px">
+    <svg viewBox="0 0 1080 330" font-family="-apple-system,PingFang SC,Microsoft YaHei,sans-serif">
+      <defs><marker id="a3" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#475569"/></marker></defs>
+      <rect x="20" y="120" width="150" height="86" rx="12" fill="#4338ca"/>
+      <text x="95" y="152" text-anchor="middle" font-size="14" font-weight="800" fill="#fff">load_agent()</text>
+      <text x="95" y="172" text-anchor="middle" font-size="10.5" fill="#dfe3ff">agent_id + model_config_id</text>
+      <text x="95" y="188" text-anchor="middle" font-size="10.5" fill="#dfe3ff">+ project_id</text>
+      <g font-size="12">
+        <rect x="230" y="30" width="360" height="40" rx="9" fill="#eef2ff" stroke="#a5b4fc"/><text x="250" y="55" fill="#312e81" font-weight="700">① aigc_work_agents</text><text x="580" y="55" text-anchor="end" fill="#64748b" font-size="11">基本信息 / role / user_prompt</text>
+        <rect x="230" y="80" width="360" height="40" rx="9" fill="#eef2ff" stroke="#a5b4fc"/><text x="250" y="105" fill="#312e81" font-weight="700">② aigc_work_agent_versions</text><text x="580" y="105" text-anchor="end" fill="#64748b" font-size="11">version_data → system_prompt</text>
+        <rect x="230" y="130" width="360" height="40" rx="9" fill="#fef3c7" stroke="#fcd34d"/><text x="250" y="155" fill="#92400e" font-weight="700">③ 模型凭据（三级回退）</text><text x="580" y="155" text-anchor="end" fill="#92400e" font-size="11">agent_model_relations + detail + supplier</text>
+        <rect x="230" y="180" width="360" height="40" rx="9" fill="#fff7ed" stroke="#fdba74"/><text x="250" y="205" fill="#9a3412" font-weight="700">④ 连接器（直接 + Agent插件 + 项目插件）</text><text x="580" y="205" text-anchor="end" fill="#9a3412" font-size="11">connector_relations</text>
+        <rect x="230" y="230" width="360" height="40" rx="9" fill="#eef2ff" stroke="#a5b4fc"/><text x="250" y="255" fill="#312e81" font-weight="700">⑤ 子 Agent（sub_relations）</text><text x="580" y="255" text-anchor="end" fill="#64748b" font-size="11">SubAgentRef 列表</text>
+        <rect x="230" y="280" width="360" height="40" rx="9" fill="#fdf2f8" stroke="#fbcfe8"/><text x="250" y="305" fill="#9d174d" font-weight="700">⑥ 技能（Agent + 插件技能 id → SKILL.md 摘要）</text><text x="580" y="305" text-anchor="end" fill="#9d174d" font-size="11">aigc_agent_skills</text>
+      </g>
+      <g stroke="#94a3b8" stroke-width="1.8">
+        <line x1="170" y1="140" x2="230" y2="50" marker-end="url(#a3)"/>
+        <line x1="170" y1="150" x2="230" y2="100" marker-end="url(#a3)"/>
+        <line x1="170" y1="160" x2="230" y2="150" marker-end="url(#a3)"/>
+        <line x1="170" y1="170" x2="230" y2="200" marker-end="url(#a3)"/>
+        <line x1="170" y1="180" x2="230" y2="250" marker-end="url(#a3)"/>
+        <line x1="170" y1="190" x2="230" y2="300" marker-end="url(#a3)"/>
+      </g>
+      <rect x="640" y="120" width="150" height="86" rx="12" fill="#0f766e"/>
+      <text x="715" y="150" text-anchor="middle" font-size="13" font-weight="800" fill="#fff">AgentSnapshot</text>
+      <text x="715" y="170" text-anchor="middle" font-size="10.5" fill="#ccfbf1">config + llm_override</text>
+      <text x="715" y="186" text-anchor="middle" font-size="10.5" fill="#ccfbf1">+ tool_names + connectors</text>
+      <text x="715" y="200" text-anchor="middle" font-size="10.5" fill="#ccfbf1">+ skills</text>
+      <line x1="590" y1="163" x2="640" y2="163" stroke="#94a3b8" stroke-width="2.2" marker-end="url(#a3)"/>
+      <rect x="830" y="120" width="230" height="86" rx="12" fill="#274690"/>
+      <text x="945" y="148" text-anchor="middle" font-size="12.5" font-weight="800" fill="#fff">注入 metadata</text>
+      <text x="945" y="168" text-anchor="middle" font-size="10.5" fill="#c3cdf2">_connectors / _skills</text>
+      <text x="945" y="184" text-anchor="middle" font-size="10.5" fill="#c3cdf2">→ MasterAgent 构建工具集</text>
+      <line x1="790" y1="163" x2="830" y2="163" stroke="#94a3b8" stroke-width="2.2" marker-end="url(#a3)"/>
+    </svg>
+    </div>
+    <div class="cap">图 2 · AgentLoader 单次调用 6 条 SQL 的装载链路（工具 = 连接器名；技能 = 摘要列表）</div>
+  </div>
+  <div class="grid g2">
+    <div class="card"><h4>模型凭据三级回退</h4>
+      <ul class="tight">
+        <li>① 显式 <span class="mono">model_config_id</span>（前端可选模型）</li>
+        <li>② <span class="mono">is_default=1</span> 的默认模型</li>
+        <li>③ 首条记录兜底</li>
+        <li class="mini">解析：<span class="mono">aigc_model_detail</span>（model_name / model_params / vision_type）+ <span class="mono">aigc_model_supplier</span>（api_endpoint / api_key，RSA 解密）</li>
+      </ul>
+    </div>
+    <div class="card"><h4>工具 / 技能来源合并</h4>
+      <ul class="tight">
+        <li>连接器 = 直接绑定 + Agent 插件 + <b>项目插件</b>（按 id 去重）</li>
+        <li>技能 = Agent 直接 + Agent 插件 + 项目插件技能（去重后取摘要）</li>
+        <li>子 Agent = 关联表 <span class="mono">sub_relations</span> ∪ <b>任务方案阶段</b> <span class="mono">plan_stages.sub_agent_ids</span>（并集去重）</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 1.3 MCP -->
+  <h3 class="block">1.3 MCP 工具接入（本地内置 + 远程连接器）</h3>
+  <p>工具统一以 <b>OpenAI Function Calling schema</b> 暴露给模型。工具分为「本地内置（进程内 handler）」与「远程 MCP 连接器（外部服务）」两类，均在装载阶段解析、调用阶段统一路由。</p>
+  <div class="fig">
+    <div class="svgbox" style="min-width:760px">
+    <svg viewBox="0 0 1080 300" font-family="-apple-system,PingFang SC,Microsoft YaHei,sans-serif">
+      <defs><marker id="a4" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#c2410c"/></marker></defs>
+      <rect x="20" y="112" width="180" height="76" rx="12" fill="#c2410c"/>
+      <text x="110" y="144" text-anchor="middle" font-size="14" font-weight="800" fill="#fff">MCPClient</text>
+      <text x="110" y="164" text-anchor="middle" font-size="10.5" fill="#ffe4d1">get_tools_schema_async / call_tool_async</text>
+      <g font-size="11.5">
+        <rect x="270" y="30" width="360" height="118" rx="12" fill="#fff7ed" stroke="#fdba74"/>
+        <text x="290" y="54" font-size="13" font-weight="800" fill="#9a3412">本地内置工具（MCPToolRegistry）</text>
+        <g font-family="var(--mono)" fill="#7c2d12" font-size="11">
+          <text x="290" y="76">knowledge_search  list_knowledge_bases</text>
+          <text x="290" y="94">report_generate  session_history  request_user_input</text>
+          <text x="290" y="112">internet_search  web_scraper  todo_manage</text>
+          <text x="290" y="130">read/write/edit/delete/list/move/search/download_file</text>
+        </g>
+        <rect x="660" y="30" width="400" height="118" rx="12" fill="#eef2ff" stroke="#a5b4fc"/>
+        <text x="680" y="54" font-size="13" font-weight="800" fill="#3730a3">远程 MCP 连接器（RemoteMCPManager）</text>
+        <g font-size="11" fill="#4338ca">
+          <text x="680" y="76">· transport：stdio / SSE / Streamable HTTP（自动推断）</text>
+          <text x="680" y="94">· 懒加载 + 连接缓存；工具名加前缀 {connector}__{tool}</text>
+          <text x="680" y="112">· config 支持 ${} 变量渲染（token/endpoint 按任务隔离）</text>
+          <text x="680" y="130">· 空闲回收 + LRU 上限(MCP_SESSION_MAX=32) + 优雅关闭</text>
+        </g>
+      </g>
+      <line x1="200" y1="140" x2="270" y2="95" stroke="#c2410c" stroke-width="2.2" marker-end="url(#a4)"/>
+      <line x1="200" y1="158" x2="660" y2="95" stroke="#4338ca" stroke-width="2.2" marker-end="url(#a4)"/>
+      <rect x="270" y="182" width="790" height="96" rx="12" fill="#fff" stroke="#e2e8f0"/>
+      <text x="290" y="206" font-size="12.5" font-weight="800" fill="#475569">远程连接生命周期三层防护（anyio cancel scope 绑定宿主任务）</text>
+      <g font-size="11.5" fill="#3a4453">
+        <text x="290" y="228">① 空闲回收：后台扫描，关闭空闲超 MCP_SESSION_IDLE_TIMEOUT 的连接</text>
+        <text x="290" y="247">② LRU 上限：缓存连接超上限时关闭最久未用（即时兜底）</text>
+        <text x="290" y="266">③ 优雅关闭：worker 退出 close_all；回收方只置关闭信号，绝不跨任务 cancel（避免连环挂死）</text>
+      </g>
+    </svg>
+    </div>
+    <div class="cap">图 3 · MCP 工具接入：本地内置（进程内）+ 远程连接器（懒加载/缓存/前缀路由）</div>
+  </div>
+  <div class="note n-info"><div class="n-ic">⚙️</div><div><b>工具挂载的「默认 + 用户挂载」</b>引擎每次执行自动注入 <span class="mono">AGENT_CORE_TOOL_NAMES</span>（knowledge_search / list_knowledge_bases / report_generate / session_history / request_user_input / todo_manage）作为<b>默认工具</b>；<b>用户挂载工具</b>来自 Agent 直接绑定 + 插件 + 项目插件的连接器（装载阶段解析）。文件工具按 <span class="mono">file_driver</span> 与 <span class="mono">file_readonly</span> 动态增删（只读模式仅保留 read/list/search）。</div></div>
+
+  <!-- 1.4 skill -->
+  <h3 class="block">1.4 SKILL 技能编排（两阶段：摘要注入 + 按需加载）</h3>
+  <p>技能采用<b>「两阶段」策略</b>控制上下文开销——启动时只注入轻量摘要，模型需要时才拉取完整 <span class="mono">SKILL.md</span>：</p>
+  <div class="split">
+    <ol class="steps">
+      <li><b>第一阶段 · 摘要注入</b>：<span class="mono">SkillLoader.load_skill_summaries</span> 只从 <span class="mono">aigc_agent_skills</span> 读取 <b>name + description + keywords</b>（每条约 20–50 token），写入 system prompt 的 <b>[可用技能]</b> 段，并提示「用 load_skill_detail 获取详情」。</li>
+      <li><b>第二阶段 · 按需加载</b>：模型判断需要某技能时，调用动态注入的 <span class="mono">load_skill_detail</span> 工具 → 按租户路径读取完整 <span class="mono">SKILL.md</span>（<span class="mono">data/skills/{name}/</span> 或 <span class="mono">data/tenant_skills/{tenant_id}/{name}/</span>）。</li>
+      <li><b>随消息注入</b>：Master 与 Sub Agent 的 prompt 均注入各自关联的技能摘要；技能来源 = Agent 直接 + Agent 插件 + 项目插件（去重）。</li>
+    </ol>
+  </div>
+  <div class="note n-warn"><div class="n-ic">💡</div><div><b>为什么两阶段</b>把完整 SKILL.md 全部塞进 system prompt 会快速撑爆上下文、抬高每次 LLM 调用成本。摘要 + 按需拉取让「技能清单常驻、详情即用即取」，在技能数量多时尤为关键。</div></div>
+
+  <!-- 1.5 config -->
+  <h3 class="block">1.5 项目 / 任务方案中的配置方法</h3>
+  <p>一个可运行的 Agent 由以下配置维度决定，均存于 MySQL <span class="mono">aigc_work_*</span> 系列表，在 ESM 管理后台维护：</p>
+  <table class="tbl">
+    <thead><tr><th style="width:150px">配置维度</th><th style="width:230px">数据表 / 字段</th><th>作用与装载点</th></tr></thead>
+    <tbody>
+      <tr><td><b>Agent 主体</b></td><td class="c">aigc_work_agents</td><td>name（唯一标识）/ type(master·sub·audit) / role(系统提示词) / user_prompt(支持 ${} 变量) / version / metadata / status</td></tr>
+      <tr><td><b>版本提示词</b></td><td class="c">aigc_work_agent_versions</td><td>version_data(JSON) 提供当前版本 system_prompt / role，支持多版本迭代</td></tr>
+      <tr><td><b>模型绑定</b></td><td class="c">agent_model_relations</td><td>Agent ↔ 模型多对多，model_params(Agent 级覆盖) / is_default，驱动三级回退</td></tr>
+      <tr><td><b>连接器</b></td><td class="c">agent_connector_relations</td><td>直接绑定的本地工具 / 远程 MCP 连接器（builtin / mcp 类型）</td></tr>
+      <tr><td><b>子 Agent</b></td><td class="c">agent_sub_relations</td><td>Master 可派发的 Sub Agent 引用列表</td></tr>
+      <tr><td><b>技能</b></td><td class="c">agent_skill_relations</td><td>Agent 直接关联技能 id（+ 插件技能）</td></tr>
+      <tr><td><b>插件（打包能力）</b></td><td class="c">agent_plugin_relations / project_plugin_relations</td><td>插件把「连接器 + 技能」打包复用；<b>项目级插件</b>让全项目 Agent 共享同一批工具/技能</td></tr>
+      <tr><td><b>任务方案阶段</b></td><td class="c">aigc_work_plan_stages</td><td>master_agent_id / <b>sub_agent_ids</b> / audit_agent_id / audit_prompt / auto_advance —— 会话按阶段创建，阶段子 Agent 并入 dispatch 范围</td></tr>
+    </tbody>
+  </table>
+  <div class="note n-ok"><div class="n-ic">✅</div><div><b>配置即编排</b>「项目 → 插件 → 连接器/技能」与「任务方案 → 阶段 → 主/子/审计 Agent」两条链路，让运维同学<b>无需写代码</b>即可在管理后台组装出完整的多 Agent 协作方案。引擎侧仅做解析与装载，配置与执行完全解耦。</div></div>
+</section>
+
+<!-- ============ SESSION ============ -->
+<section class="chapter" id="session">
+  <div class="ch-head">
+    <div class="ch-num" style="background:var(--session);">2</div>
+    <div><div class="ch-tag">Chapter 2 · 会话启动链路</div><h2>从「用户发消息」到「Agent 执行」的完整链路</h2></div>
+  </div>
+  <p class="ch-intro">本章覆盖会话启动的每一步：提示词装配、模型参数加载、工具挂载、SKILL 启用、上下文查询，以及任务完成后的记忆提取与知识蒸馏。</p>
+
+  <!-- 2.1 sequence -->
+  <h3 class="block">2.1 端到端启动时序</h3>
+  <div class="fig">
+    <div class="svgbox" style="min-width:820px">
+    <svg viewBox="0 0 1120 560" font-family="-apple-system,PingFang SC,Microsoft YaHei,sans-serif">
+      <defs><marker id="s1" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#0e7490"/></marker>
+      <marker id="s2" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#4338ca"/></marker></defs>
+      <!-- columns -->
+      <g font-size="12.5" font-weight="800" text-anchor="middle">
+        <rect x="40" y="16" width="150" height="34" rx="8" fill="#0f766e"/><text x="115" y="38" fill="#fff">ESM 平台</text>
+        <rect x="250" y="16" width="150" height="34" rx="8" fill="#c2410c"/><text x="325" y="38" fill="#fff">Redis</text>
+        <rect x="460" y="16" width="170" height="34" rx="8" fill="#4338ca"/><text x="545" y="38" fill="#fff">AgentEngine</text>
+        <rect x="690" y="16" width="160" height="34" rx="8" fill="#7c3aed"/><text x="770" y="38" fill="#fff">MasterAgent</text>
+        <rect x="910" y="16" width="170" height="34" rx="8" fill="#475569"/><text x="995" y="38" fill="#fff">LLM / 工具</text>
+      </g>
+      <g stroke="#e2e8f0" stroke-width="1.5"><line x1="115" y1="50" x2="115" y2="540"/><line x1="325" y1="50" x2="325" y2="540"/><line x1="545" y1="50" x2="545" y2="540"/><line x1="770" y1="50" x2="770" y2="540"/><line x1="995" y1="50" x2="995" y2="540"/></g>
+      <g font-size="11.5" fill="#334155">
+        <!-- messages -->
+        <line x1="115" y1="80" x2="325" y2="80" stroke="#0e7490" stroke-width="2" marker-end="url(#s1)"/><text x="220" y="74" text-anchor="middle">① XADD stream:agent_tasks（agent_execute payload）</text>
+        <line x1="325" y1="112" x2="545" y2="112" stroke="#4338ca" stroke-width="2" marker-end="url(#s2)"/><text x="435" y="106" text-anchor="middle">② TaskWorker 消费 → handle_agent_task</text>
+        <text x="560" y="134" font-size="11" fill="#64748b">加载 PG session+历史 · 建占位 assistant 消息 · 发 message_start</text>
+        <line x1="545" y1="158" x2="545" y2="158" stroke="none"/>
+        <rect x="500" y="150" width="90" height="26" rx="6" fill="#eef2ff"/><text x="545" y="167" text-anchor="middle" font-size="10.5" fill="#4338ca">load_agent(6 SQL)</text>
+        <rect x="470" y="184" width="150" height="26" rx="6" fill="#fff7ed"/><text x="545" y="201" text-anchor="middle" font-size="10.5" fill="#9a3412">注入核心工具 + 文件工具</text>
+        <rect x="455" y="218" width="180" height="30" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/><text x="545" y="238" text-anchor="middle" font-size="10.5" fill="#15803d" font-weight="700">③ asyncio.gather：知识库检索 ∥ 记忆检索</text>
+        <rect x="470" y="258" width="150" height="26" rx="6" fill="#f5f3ff"/><text x="545" y="275" text-anchor="middle" font-size="10.5" fill="#7c3aed">④ 上下文压缩 build_context</text>
+        <line x1="545" y1="300" x2="770" y2="300" stroke="#4338ca" stroke-width="2" marker-end="url(#s2)"/><text x="655" y="294" text-anchor="middle">⑤ build_master_prompt + 构建工具集</text>
+        <rect x="700" y="316" width="150" height="40" rx="8" fill="#f5f3ff" stroke="#ddd6fe"/><text x="775" y="333" text-anchor="middle" font-size="10.5" fill="#7c3aed" font-weight="700">⑥ 有界多轮工具循环</text><text x="775" y="348" text-anchor="middle" font-size="10" fill="#6d5fa0">≤8 轮 · 退化重试 ×2</text>
+        <line x1="770" y1="366" x2="995" y2="388" stroke="#0e7490" stroke-width="1.8" marker-end="url(#s1)"/><text x="900" y="374" text-anchor="middle" font-size="10.5">⑦ LLM 调用（带 tools schema）</text>
+        <line x1="995" y1="388" x2="770" y2="410" stroke="#475569" stroke-width="1.8" stroke-dasharray="4 3" marker-end="url(#s1)"/><text x="900" y="402" text-anchor="middle" font-size="10.5">tool_calls / 正文（流式）</text>
+        <rect x="700" y="416" width="150" height="30" rx="6" fill="#fff7ed" stroke="#fdba74"/><text x="775" y="435" text-anchor="middle" font-size="10.5" fill="#9a3412">⑧ 执行工具（本地/远程/派发）</text>
+        <rect x="700" y="452" width="150" height="30" rx="6" fill="#fdf2f8" stroke="#fbcfe8"/><text x="775" y="471" text-anchor="middle" font-size="10.5" fill="#be185d">派发 → Executor DAG 子Agent</text>
+        <line x1="770" y1="488" x2="545" y2="510" stroke="#4338ca" stroke-width="2" marker-end="url(#s2)"/><text x="655" y="482" text-anchor="middle">⑨ 汇总子 Agent 结果 → 最终回答</text>
+        <line x1="545" y1="526" x2="325" y2="526" stroke="#0e7490" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#s1)"/><text x="435" y="520" text-anchor="middle">⑩ PUBLISH 事件（chunk/tool/thinking/end）</text>
+        <line x1="325" y1="526" x2="115" y2="526" stroke="#0f766e" stroke-width="2" marker-end="url(#s1)"/><text x="220" y="520" text-anchor="middle" fill="#0f766e">SSE 转发给前端 + 异步记忆提取</text>
+      </g>
+    </svg>
+    </div>
+    <div class="cap">图 4 · 会话启动端到端时序（ESM → Redis → 引擎 → Master → LLM/工具 → SSE 回传）</div>
+  </div>
+
+  <!-- 2.2 prompt -->
+  <h3 class="block">2.2 提示词装配（build_master_prompt）</h3>
+  <p>系统提示词由多段<b>有序拼装</b>而成，统一经 <span class="mono">${}</span> 变量引擎渲染（支持点号嵌套 <span class="mono">${user.name}</span> 与 <span class="mono">|</span> 回退 <span class="mono">${a|b}</span>）：</p>
+  <div class="fig">
+    <div class="svgbox" style="min-width:700px">
+    <svg viewBox="0 0 1080 250" font-family="-apple-system,PingFang SC,Microsoft YaHei,sans-serif">
+      <rect x="20" y="18" width="1040" height="214" rx="14" fill="#fff" stroke="#e2e8f0"/>
+      <text x="45" y="46" font-size="13.5" font-weight="800" fill="#274690">System Prompt 拼装顺序</text>
+      <g font-size="12" font-weight="700">
+        <rect x="45" y="62" width="180" height="40" rx="9" fill="#eef2ff" stroke="#a5b4fc"/><text x="55" y="79" fill="#312e81">① system_prompt(role)</text><text x="55" y="95" fill="#64748b" font-weight="500" font-size="10">经 ${} 变量渲染</text>
+        <rect x="235" y="62" width="150" height="40" rx="9" fill="#fff" stroke="#cbd5e1"/><text x="245" y="79" fill="#475569">② [任务规划]</text><text x="245" y="95" fill="#94a3b8" font-weight="500" font-size="10">引导 todo_manage</text>
+        <rect x="395" y="62" width="150" height="40" rx="9" fill="#fff" stroke="#cbd5e1"/><text x="405" y="79" fill="#475569">③ [工单信息]</text><text x="405" y="95" fill="#94a3b8" font-weight="500" font-size="10">issue_key/type/描述</text>
+        <rect x="555" y="62" width="170" height="40" rx="9" fill="#eef2ff" stroke="#a5b4fc"/><text x="565" y="79" fill="#312e81">④ [可用子Agent]</text><text x="565" y="95" fill="#64748b" font-weight="500" font-size="10">名称 + 描述</text>
+        <rect x="735" y="62" width="180" height="40" rx="9" fill="#fdf2f8" stroke="#fbcfe8"/><text x="745" y="79" fill="#9d174d">⑤ [可用技能]</text><text x="745" y="95" fill="#be185d" font-weight="500" font-size="10">摘要 + load_skill_detail 提示</text>
+      </g>
+      <g font-size="12" font-weight="700">
+        <rect x="45" y="118" width="200" height="40" rx="9" fill="#f0fdf4" stroke="#bbf7d0"/><text x="55" y="135" fill="#166534">⑥ [知识库参考]</text><text x="55" y="151" fill="#4b7a5a" font-weight="500" font-size="10">RAG 命中（含相似度/来源）</text>
+        <rect x="255" y="118" width="180" height="40" rx="9" fill="#f5f3ff" stroke="#ddd6fe"/><text x="265" y="135" fill="#5b21b6">⑦ [记忆参考]</text><text x="265" y="151" fill="#6d5fa0" font-weight="500" font-size="10">三层记忆（每条截断 500）</text>
+        <rect x="445" y="118" width="230" height="40" rx="9" fill="#fffbeb" stroke="#fde7b3"/><text x="455" y="135" fill="#92400e">⑧ [历史对话摘要] / [同阶段前序会话记录]</text><text x="455" y="151" fill="#b45309" font-weight="500" font-size="10">压缩位点 / 兄弟会话聚合（提取前置 system 块）</text>
+      </g>
+      <rect x="45" y="174" width="870" height="40" rx="9" fill="#f0fdfa" stroke="#99f6e4"/><text x="55" y="191" font-size="12" font-weight="800" fill="#0f766e">User Prompt 三分支渲染</text><text x="55" y="207" font-size="10.5" fill="#4b7a76">含 ${} → 替换直接用 ｜ 纯文本无变量 → 追加私有参数 ｜ 为空 → 默认模板 ${user_message}</text>
+      <text x="45" y="228" font-size="10.5" fill="#94a3b8">历史消息处理：跳过中段 system、合并连续同 role 消息；末条 user 作为本次指令</text>
+    </svg>
+    </div>
+    <div class="cap">图 5 · Master 提示词装配：8 段 system + user_prompt 三分支渲染</div>
+  </div>
+
+  <!-- 2.3 model params -->
+  <h3 class="block">2.3 模型参数加载与优先级</h3>
+  <div class="grid g2">
+    <div class="card"><h4>参数来源优先级（高 → 低）</h4>
+      <ol class="steps">
+        <li><b>智能体关联模型参数</b>：<span class="mono">agent_model_relations.model_params</span></li>
+        <li><b>模型详情参数</b>：<span class="mono">aigc_model_detail.config_json</span>（装载层已合并进 override_params）</li>
+        <li><b>引擎 ENV 默认值</b>：<span class="mono">LLM_DEFAULT_TEMPERATURE=0.5</span> / <span class="mono">MAX_TOKENS=2048</span> / <span class="mono">TOP_P=0.9</span> / <span class="mono">TIMEOUT=600s</span></li>
+      </ol>
+      <p class="mini">实际模型名与凭据<b>必须由数据库配置提供</b>（ENV 默认模型名为空）。支持多模态（vision_type=1）与思考档位（deep_thinking → thinking_budget / reasoning_effort）。</p>
+    </div>
+    <div class="card"><h4>关键运行时控制</h4>
+      <ul class="tight">
+        <li><b>流式</b>：默认启用（含工具调用场景），<span class="mono">stream_options.include_usage</span> 流末返回 token 用量</li>
+        <li><b>退化响应重试</b>：<span class="mono">_MASTER_EMPTY_RESPONSE_RETRIES=2</span>，末次降级「无 tools + 强制回答」兜底</li>
+        <li><b>TTFT / tokens_per_second</b> 记录首字延迟与生成效率</li>
+        <li><b>入口净化</b> <span class="mono">sanitize_llm_messages</span>：剔除思考字段，防 Qwen3 系续写空响应</li>
+        <li><b>上下文压缩智能体 / 知识库选型</b>可独立配置专用模型与 role（凭据隔离）</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 2.4 tool mount -->
+  <h3 class="block">2.4 工具挂载与 SKILL 启用流程</h3>
+  <p>Master 在 <span class="mono">_build_master_tools</span> 中组装本轮完整工具集，并在有界多轮工具循环中统一路由：</p>
+  <div class="grid g4">
+    <div class="card"><h4>① 本地工具 schema</h4><p class="mini">按 <span class="mono">config.tools</span> 从 MCPToolRegistry 取 OpenAI schema（含自动注入的核心工具 + 文件工具）。</p></div>
+    <div class="card"><h4>② 远程 MCP 工具</h4><p class="mini"><span class="mono">get_tools_schema_async</span> 对连接器 <span class="mono">list_tools</span>，工具名加 <span class="mono">{connector}__</span> 前缀避免冲突。</p></div>
+    <div class="card"><h4>③ dispatch_sub_task</h4><p class="mini">有子 Agent 时注入虚拟工具；description 动态列出可用子 Agent，schema 用 enum 约束。</p></div>
+    <div class="card"><h4>④ load_skill_detail</h4><p class="mini">有技能时注入；模型按需拉取完整 SKILL.md（即 SKILL 启用的触发点）。</p></div>
+  </div>
+  <div class="note n-brand"><div class="n-ic">🔄</div><div><b>有界多轮工具循环（Master / Sub 一致）</b>每轮带 tools 调 LLM：返回 <span class="mono">tool_calls</span> 则逐个执行（注入 <span class="mono">_session_id/_messages/_llm_override/_file_driver</span> 等上下文）并把结果追加进对话进入下一轮；无 tool_calls 则该轮即最终回答。Master 上限 8 轮、Sub 上限 5 轮；每轮/每工具前检测取消标记；request_user_input 触发暂停并提前返回。</div></div>
+
+  <!-- 2.4.1 SKILL / MCP 可见范围限定 -->
+  <div class="note n-warn" style="margin-top:22px"><div class="n-ic">⚠️</div><div><b>关键澄清 · 本会话能用的 MCP / SKILL 是"限定"的，而非全量</b>项目管理后台里录入的 N 个技能（例如 1000 个）只是一个<b>技能库 / 目录</b>。某个会话真正能调用的，是装载阶段按 <b>Agent + 项目</b> 两个维度解析出来的<b>子集</b>——既不是"后台全部技能"，也<b>不是</b>"某个用户个人偏好"。装配逻辑统一收口在 <span class="mono">load_agent()</span> 的 <span class="mono">_load_all_skill_ids</span>（技能）与 <span class="mono">_load_all_connectors</span>（连接器）。</div></div>
+
+  <p style="margin-top:16px"><b>技能（SKILL）来源 · 三处并集去重</b>：<span class="mono">_load_all_skill_ids(agent_id, project_id)</span> 合并下列来源，再经 <span class="mono">load_skill_summaries</span> 用 <span class="mono">WHERE id IN (…) AND enabled = 1</span> 过滤——只有"被装配 且 已启用"的技能，才会进入 system prompt 的 [可用技能] 段：</p>
+  <div class="grid g3">
+    <div class="card"><h4>① Agent 直接挂载</h4><p class="mini"><span class="mono">agent_skill_relations</span>（agent_id）。在 Agent 配置里逐个勾选的技能。</p></div>
+    <div class="card"><h4>② Agent 关联插件</h4><p class="mini"><span class="mono">agent_plugin_relations</span> → <span class="mono">plugin_skill_relations</span>。通过插件整包带入的技能。</p></div>
+    <div class="card"><h4>③ 项目关联插件</h4><p class="mini">有 <span class="mono">project_id</span> 时，<span class="mono">project_plugin_relations</span> → <span class="mono">plugin_skill_relations</span>。让全项目 Agent 共享同一批技能。</p></div>
+  </div>
+
+  <p style="margin-top:16px"><b>连接器 / 远程 MCP 来源 · 同样的三处并集</b>：<span class="mono">_load_all_connectors(agent_id, project_id)</span> 按 id 去重合并以下来源，其中 <span class="mono">type≠mcp</span> 的作为本地内置工具、<span class="mono">type=mcp</span> 的作为远程连接器（惰性连接、按需建连）：</p>
+  <div class="grid g3">
+    <div class="card"><h4>① Agent 直接连接器</h4><p class="mini"><span class="mono">agent_connector_relations</span> JOIN <span class="mono">connectors</span>（status=1）。Agent 配置里直接绑定的工具 / MCP。</p></div>
+    <div class="card"><h4>② Agent 插件连接器</h4><p class="mini"><span class="mono">agent_plugin_relations</span> → <span class="mono">plugin_connector_relations</span>（status=1）。插件包内的连接器。</p></div>
+    <div class="card"><h4>③ 项目插件连接器</h4><p class="mini">有 <span class="mono">project_id</span> 时，<span class="mono">project_plugin_relations</span> → <span class="mono">plugin_connector_relations</span>（status=1）。</p></div>
+  </div>
+
+  <table class="tbl" style="margin-top:14px">
+    <thead><tr><th style="width:150px">限定维度</th><th style="width:210px">SKILL 技能</th><th>连接器 / 远程 MCP</th></tr></thead>
+    <tbody>
+      <tr><td><b>装配维度</b></td><td class="c">agent_id + project_id</td><td class="c">agent_id + project_id</td></tr>
+      <tr><td><b>是否与"用户"相关</b></td><td class="c">否 · 不按 user_id 过滤</td><td class="c">否 · 不按 user_id 过滤</td></tr>
+      <tr><td><b>是否 = 后台全量</b></td><td class="c">否 · 仅并集子集，且 enabled=1</td><td class="c">否 · 仅并集子集，且 status=1</td></tr>
+      <tr><td><b>租户(tenant)</b></td><td colspan="2" class="c">仅决定 <span class="mono">SKILL.md</span> 读取路径：<span class="mono">data/skills/{name}/</span>（全局）或 <span class="mono">data/tenant_skills/{tid}/{name}/</span>（租户）；<b>不参与"选哪些技能"</b>。</td></tr>
+    </tbody>
+  </table>
+
+  <div class="note n-brand"><div class="n-ic">🎯</div><div><b>对"1000 个技能"的直接回答</b>若项目在技能管理里录了 1000 个技能，<b>并不会</b>让每个用户、每个会话都能用全部 1000 个。实际可用集 = 该会话所用 <b>Agent 直接挂载 ＋ 该 Agent 关联插件 ＋ 该项目关联插件</b> 三者技能之并集，且需 <b>enabled=1</b>。因此：同一 Agent 在同一项目下，<b>所有用户看到的可用技能 / 连接器完全一致</b>；若要给不同角色不同能力，需要配置<b>不同的 Agent</b>（或不同项目 / 插件组合），而不是按用户区分。技能数量本身不拖累系统——第一阶段只注入"名称 + 描述"的轻量摘要（每条约 20–50 token），完整正文仅在模型按需调用 <span class="mono">load_skill_detail</span> 时才从磁盘读取。</div></div>
+
+  <!-- 2.5 context / RAG -->
+  <h3 class="block">2.5 上下文查询（RAG 知识库自动选型 + 记忆检索，并行）</h3>
+  <p>引擎在 <span class="mono">execute()</span> 中用 <span class="mono">asyncio.gather</span> <b>并行</b>执行知识库检索与记忆检索（互不依赖），结果分别注入 <span class="mono">[知识库参考]</span> 与 <span class="mono">[记忆参考]</span>。</p>
+  <div class="fig">
+    <div class="svgbox" style="min-width:720px">
+    <svg viewBox="0 0 1080 250" font-family="-apple-system,PingFang SC,Microsoft YaHei,sans-serif">
+      <defs><marker id="k1" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#15803d"/></marker></defs>
+      <rect x="20" y="92" width="150" height="66" rx="12" fill="#15803d"/><text x="95" y="120" text-anchor="middle" font-size="13" font-weight="800" fill="#fff">RAG 自动选型</text><text x="95" y="140" text-anchor="middle" font-size="10.5" fill="#bbf7d0">resolve_project_dataset_ids</text>
+      <g font-size="11.5">
+        <rect x="220" y="40" width="330" height="44" rx="9" fill="#f0fdf4" stroke="#bbf7d0"/><text x="240" y="60" fill="#166534" font-weight="700">项目关联库 ≤ 2 → 检索全部（防漏召回）</text><text x="240" y="77" fill="#4b7a5a" font-size="10.5">KB_AUTO_SELECT_SEARCH_ALL_BELOW=2</text>
+        <rect x="220" y="92" width="330" height="44" rx="9" fill="#f0fdf4" stroke="#bbf7d0"/><text x="240" y="112" fill="#166534" font-weight="700">否则 → LLM 按描述筛 Top-N（≤3）</text><text x="240" y="129" fill="#4b7a5a" font-size="10.5">KB_AUTO_SELECT_MAX=3 · 独立选型模型/role</text>
+        <rect x="220" y="144" width="330" height="44" rx="9" fill="#fff7ed" stroke="#fdba74"/><text x="240" y="164" fill="#9a3412" font-weight="700">筛空 → 回退项目全部关联库（编排层兜底）</text><text x="240" y="181" fill="#9a5b2a" font-size="10.5">不改选型模型输出约定</text>
+      </g>
+      <g stroke="#15803d" stroke-width="1.8"><line x1="170" y1="115" x2="220" y2="62" marker-end="url(#k1)"/><line x1="170" y1="125" x2="220" y2="114" marker-end="url(#k1)"/><line x1="170" y1="135" x2="220" y2="166" marker-end="url(#k1)"/></g>
+      <rect x="590" y="60" width="200" height="80" rx="12" fill="#fff" stroke="#bbf7d0"/><text x="690" y="88" text-anchor="middle" font-size="12.5" font-weight="800" fill="#166534">knowledge_search</text><text x="690" y="106" text-anchor="middle" font-size="10.5" fill="#4b7a5a">MCP 工具切片检索</text><text x="690" y="122" text-anchor="middle" font-size="10.5" fill="#4b7a5a">（VokiRAG / pgvector）</text>
+      <line x1="550" y1="114" x2="590" y2="106" stroke="#15803d" stroke-width="2" marker-end="url(#k1)"/>
+      <g font-size="11">
+        <rect x="810" y="40" width="250" height="40" rx="9" fill="#fff" stroke="#e2e8f0"/><text x="825" y="58" fill="#475569" font-weight="700">无命中 → 扩到项目其余库</text><text x="825" y="73" fill="#94a3b8" font-size="10">expand_dataset_ids_if_needed</text>
+        <rect x="810" y="88" width="250" height="40" rx="9" fill="#fff" stroke="#e2e8f0"/><text x="825" y="106" fill="#475569" font-weight="700">仍无 → 扩跨项目（按 allowed_project_ids）</text><text x="825" y="121" fill="#94a3b8" font-size="10">expand_to_other_projects_if_needed</text>
+      </g>
+      <line x1="790" y1="90" x2="810" y2="60" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#k1)"/>
+      <line x1="790" y1="120" x2="810" y2="108" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#k1)"/>
+      <!-- memory -->
+      <rect x="20" y="205" width="1040" height="36" rx="9" fill="#f5f3ff" stroke="#ddd6fe"/>
+      <text x="40" y="228" font-size="11.5" fill="#5b21b6" font-weight="700">记忆检索（并行）：MemoryPG.search(scope_pairs, query) — 多 scope 全文检索（tsvector + GIN 索引），默认 scope=[session, user]，issue 可加；limit=5</text>
+    </svg>
+    </div>
+    <div class="cap">图 6 · 知识库自动选型与记忆检索：显式 dataset_ids 优先，否则按项目关联 + 描述筛选，逐级扩召回</div>
+  </div>
+
+  <!-- 2.6 memory -->
+  <h3 class="block">2.6 记忆助手提取（三层记忆 + 自动提取）</h3>
+  <p>记忆系统采用<b>单表 <span class="mono">agent_memories</span> + scope 鉴别列</b>，三层作用域跨会话增强上下文：</p>
+  <table class="tbl">
+    <thead><tr><th>scope</th><th>scope_key</th><th>场景</th></tr></thead>
+    <tbody>
+      <tr><td class="c">issue</td><td class="c">issue_key</td><td>工单级记忆，跨会话共享（同一工单多次会话可复用）</td></tr>
+      <tr><td class="c">session</td><td class="c">session hash_id</td><td>会话级记忆</td></tr>
+      <tr><td class="c">user</td><td class="c">user_id</td><td>用户个人记忆，跨工单/会话（偏好、习惯）</td></tr>
+    </tbody>
+  </table>
+  <div class="grid g2">
+    <div class="card"><h4>自动提取流程（任务完成后）</h4>
+      <ol class="steps">
+        <li><b>触发</b>：Agent 任务完成后 fire-and-forget；<span class="mono">WORKER_MEMORY_PROCESS_COUNT&gt;0</span> 时投递到 <span class="mono">stream:memory_tasks</span> 由<b>独立 Memory Worker</b> 消费，否则 inline。</li>
+        <li><b>门控</b>：专用轻量模型（<span class="mono">MEMORY_LLM_*</span> 或工作智能体配置）；对话内容 <span class="mono">&lt; MEMORY_EXTRACTION_MIN_CHARS=100</span> 跳过。</li>
+        <li><b>提取</b>：LLM 输出结构化 JSON（title / content / keywords / memory_type / importance / scope）。</li>
+        <li><b>去重写入</b>：内容前缀命中已有记忆 → <span class="mono">importance += 1</span>；否则 <span class="mono">MemoryPG.add</span>（单次上限 5 条）。</li>
+      </ol>
+    </div>
+    <div class="card"><h4>检索与增强</h4>
+      <ul class="tight">
+        <li>多 scope 全文检索（tsvector + GIN 索引），一次查多作用域</li>
+        <li>检索结果注入 <span class="mono">AgentContext.memories</span> → system prompt <span class="mono">[记忆参考]</span></li>
+        <li><span class="mono">MemoryPG</span> 提供 add / search / list_by_scope / update / delete / increment_importance</li>
+        <li>凭据可来自「记忆提取工作智能体」配置（role 支持 ${} 变量），回退 ENV</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 2.7 distill -->
+  <h3 class="block">2.7 知识蒸馏（SOP 生成流水线）</h3>
+  <p>知识蒸馏把历史工单「蒸馏」为可复用的 SOP 文档，由独立 <b>Distill Worker</b> 消费 <span class="mono">stream:distill_tasks</span>。编排为「数据源策略 → 逐条生成 → 分组汇总 → 文件输出」薄编排层：</p>
+  <div class="fig">
+    <div class="svgbox" style="min-width:760px">
+    <svg viewBox="0 0 1080 200" font-family="-apple-system,PingFang SC,Microsoft YaHei,sans-serif">
+      <defs><marker id="d1" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#7c3aed"/></marker></defs>
+      <g font-size="12.5" font-weight="800" text-anchor="middle">
+        <rect x="20" y="70" width="220" height="64" rx="12" fill="#fff" stroke="#ddd6fe"/><text x="130" y="96" fill="#7c3aed">① source.collect()</text><text x="130" y="116" font-size="10.5" font-weight="500" fill="#6d5fa0">批量采集工单（Jira/本地源）</text>
+        <rect x="280" y="70" width="240" height="64" rx="12" fill="#fff" stroke="#ddd6fe"/><text x="400" y="96" fill="#7c3aed">② 逐工单 generate_issue_sop()</text><text x="400" y="116" font-size="10.5" font-weight="500" fill="#6d5fa0">Semaphore(3) 限流并发生成个体 SOP</text>
+        <rect x="560" y="70" width="230" height="64" rx="12" fill="#fff" stroke="#ddd6fe"/><text x="675" y="96" fill="#7c3aed">③ 按分类分组 generate_summary_sop()</text><text x="675" y="116" font-size="10.5" font-weight="500" fill="#6d5fa0">生成分类汇总 SOP</text>
+        <rect x="830" y="70" width="230" height="64" rx="12" fill="#f5f3ff" stroke="#ddd6fe"/><text x="945" y="96" fill="#7c3aed">④ 文件输出 + 质量审查</text><text x="945" y="116" font-size="10.5" font-weight="500" fill="#6d5fa0">reviewer 打分 → 平均质量分</text>
+      </g>
+      <g stroke="#7c3aed" stroke-width="2"><line x1="240" y1="102" x2="280" y2="102" marker-end="url(#d1)"/><line x1="520" y1="102" x2="560" y2="102" marker-end="url(#d1)"/><line x1="790" y1="102" x2="830" y2="102" marker-end="url(#d1)"/></g>
+      <text x="540" y="168" text-anchor="middle" font-size="11" fill="#6d5fa0">独立进程消费 stream:distill_tasks · 进度实时写回 DB · 失败仅告警不阻断整体</text>
+    </svg>
+    </div>
+    <div class="cap">图 7 · 知识蒸馏流水线：采集 → 个体 SOP（并发限流）→ 分类汇总 SOP → 质量审查</div>
+  </div>
+</section>
+
+<!-- ============ EXTEND ============ -->
+<section class="chapter" id="extend">
+  <div class="ch-head">
+    <div class="ch-num" style="background:var(--ext);">3</div>
+    <div><div class="ch-tag">Chapter 3 · 扩展梳理</div><h2>其它重要的核心加载 / 编排实现</h2></div>
+  </div>
+  <p class="ch-intro">除主流程外，以下工程化能力支撑系统在生产环境稳定、可观测、可恢复地运行。</p>
+
+  <!-- multiprocess -->
+  <h3 class="block">3.1 多进程 Master-Supervisor 架构</h3>
+  <div class="fig">
+    <div class="svgbox" style="min-width:780px">
+    <svg viewBox="0 0 1080 260" font-family="-apple-system,PingFang SC,Microsoft YaHei,sans-serif">
+      <defs><marker id="m1" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#475569"/></marker></defs>
+      <rect x="20" y="30" width="240" height="196" rx="14" fill="#334155"/>
+      <text x="140" y="58" text-anchor="middle" font-size="13.5" font-weight="800" fill="#fff">worker_main.py</text>
+      <text x="140" y="76" text-anchor="middle" font-size="10.5" fill="#cbd5e1">Master / Supervisor 进程</text>
+      <g font-size="10.5" fill="#e2e8f0">
+        <text x="40" y="100">· ProcessManager(spawn 子进程)</text>
+        <text x="40" y="120">· 监控循环（每 2s 检测存活）</text>
+        <text x="40" y="140">· 崩溃自动重启（窗口限次）</text>
+        <text x="40" y="160">· SIGINT/SIGTERM 优雅关闭</text>
+        <text x="40" y="180">· 监控面板 HTTP :9100（零依赖）</text>
+        <text x="40" y="200">· Redis 心跳 Hash（TTL 15s）</text>
+      </g>
+      <g font-size="11.5" font-weight="700">
+        <rect x="320" y="40" width="240" height="46" rx="10" fill="#eef2ff" stroke="#a5b4fc"/><text x="340" y="59" fill="#4338ca">Agent Worker ×N（默认 2）</text><text x="340" y="76" fill="#64748b" font-weight="500" font-size="10">stream:agent_tasks(:high) · 消费执行</text>
+        <rect x="320" y="96" width="240" height="46" rx="10" fill="#f5f3ff" stroke="#ddd6fe"/><text x="340" y="115" fill="#7c3aed">Memory Worker ×N（默认 1）</text><text x="340" y="132" fill="#6d5fa0" font-weight="500" font-size="10">stream:memory_tasks · 记忆提取（0=inline）</text>
+        <rect x="320" y="152" width="240" height="46" rx="10" fill="#fff7ed" stroke="#fdba74"/><text x="340" y="171" fill="#c2410c">Distill Worker ×N（默认 1）</text><text x="340" y="188" fill="#9a5b2a" font-weight="500" font-size="10">stream:distill_tasks · 知识蒸馏（0=禁用）</text>
+      </g>
+      <g stroke="#94a3b8" stroke-width="1.8"><line x1="260" y1="100" x2="320" y2="63" marker-end="url(#m1)"/><line x1="260" y1="128" x2="320" y2="119" marker-end="url(#m1)"/><line x1="260" y1="156" x2="320" y2="175" marker-end="url(#m1)"/></g>
+      <rect x="610" y="40" width="450" height="158" rx="12" fill="#fff" stroke="#e2e8f0"/>
+      <text x="630" y="66" font-size="12.5" font-weight="800" fill="#334155">TaskWorker（Redis Stream 消费）特性</text>
+      <g font-size="11.5" fill="#3a4453">
+        <text x="630" y="90">· ConsumerGroup 消费 + 信号量并发（WORKER_AGENT_CONCURRENCY=2）</text>
+        <text x="630" y="110">· 每 60s 回收 PEL 卡死消息（autoclaim min_idle=300s，接管崩溃节点）</text>
+        <text x="630" y="130">· 字段归一化（兼容 hiredis dict / list[tuple] / flat list）</text>
+        <text x="630" y="150">· 高优先级 Stream 独立进程（用户实时等待的 resume/audit/rollback）</text>
+        <text x="630" y="170">· 心跳上报 busy/idle → 监控面板展示 总数/运行中/空闲/异常</text>
+      </g>
+    </svg>
+    </div>
+    <div class="cap">图 8 · 多进程 Master-Supervisor：agent / memory / distill 独立子进程 + 崩溃自愈 + 零依赖监控面板</div>
+  </div>
+
+  <!-- grid of features -->
+  <div class="grid g2">
+    <div class="card"><h4>上下文压缩 ContextManager</h4>
+      <p class="mini">长对话自动摘要压缩：<b>≤10 条</b>全量保留；<b>11–30 条</b>保留最近 10 条、旧消息 LLM 摘要为 <span class="mono">[历史对话摘要]</span>；<b>&gt;30 条</b>取最近 29 条窗口 + 摘要。摘要在 <span class="mono">build_master_prompt</span> 中合并进 system，避免被 system 跳过逻辑丢弃。无 LLM 凭据时回退简单截断（每条 200 字符）。</p>
+    </div>
+    <div class="card"><h4>会话消息场景隔离（msg_scope / history_scope）</h4>
+      <p class="mini">同一会话用 <span class="mono">msg_scope</span> 隔离不同场景：<span class="mono">main</span>（主对话）/ <span class="mono">audit</span>（审计）/ <span class="mono">stage_summary</span>（阶段总结）。<span class="mono">history_scope</span> 控制历史读取（缺省 [msg_scope]），main 任务只读 main 历史（修复审计消息混入）；seq_num 跨 scope 统一递增。</p>
+    </div>
+    <div class="card"><h4>同阶段多会话聚合</h4>
+      <p class="mini">阶段流转/回退都会新建会话并覆盖 <span class="mono">issue.session_id</span>。总结时 PHP 收集兄弟会话（<span class="mono">extra_history_sessions</span>），引擎合成 <span class="mono">[同阶段前序会话记录]</span> 前情块注入总结上下文，但<b>绝不混入当前会话消息流</b>（避免污染压缩位点计算）。</p>
+    </div>
+    <div class="card"><h4>任务取消 / 暂停 / 恢复 / 撤回</h4>
+      <p class="mini"><b>取消</b>：Redis 标记 <span class="mono">task_cancel:{sid}</span>（TTL 5min）+ 内存标记，每 2s / 每 5 chunk 检测 → 抛 <span class="mono">TaskCancelledError</span>。<b>暂停</b>：request_user_input 存 <span class="mono">agent_pause:{id}</span>（TTL 30min）→ 用户提交 → <span class="mono">resume_execute</span> 复用占位消息续跑。<b>撤回</b>：归档消息 + 文件版本回滚（rollback_to_parent）。</p>
+    </div>
+    <div class="card"><h4>文件操作 Driver（工作目录 / 版本）</h4>
+      <p class="mini">可插拔 <span class="mono">local / sftp / ssh</span> 驱动，统一 <span class="mono">working_directory</span> 概念；local 用 <b>Git tracker</b> 做版本跟踪与回滚（保留 50 commit），远程用 snapshot（保留 30）。写操作有大小/体积限制，支撑「文件版本」与撤回重答。</p>
+    </div>
+    <div class="card"><h4>审计 / 阶段流转 / 外部集成</h4>
+      <p class="mini"><b>Audit Agent</b> 评估阶段完成质量，<span class="mono">auto_advance</span> 决定是否自动流转（未通过则暂停待人工）。<b>Jira</b> Webhook → 工单 → 触发 Agent；<b>Zabbix</b> 告警接入。API Key 经 <b>RSA 加解密</b>（与 PHP 侧共用密钥对）。</p>
+    </div>
+  </div>
+
+  <div class="note n-info"><div class="n-ic">🔍</div><div><b>可观测性</b>引擎内置零依赖监控面板（标准库 <span class="mono">http.server</span>，端口 9100）：HTML 面板 5s 自动刷新 + <span class="mono">/api/status</span> JSON 供外部采集；日志按工单号拆分（<span class="mono">FULL_REQUEST</span>）；LLM 调用可开 <span class="mono">LLM_LOG_FULL_MESSAGES</span> 审计完整请求（默认关）。</div></div>
+</section>
+
+<!-- ============ DATAFLOW ============ -->
+<section class="chapter" id="dataflow">
+  <div class="ch-head">
+    <div class="ch-num" style="background:#334155;">4</div>
+    <div><div class="ch-tag">数据流 & 存储</div><h2>三大存储与消息 / 事件流</h2></div>
+  </div>
+  <div class="grid g3">
+    <div class="card"><div class="ic" style="background:var(--agent-bg)">🗄️</div><h4>MySQL 8.0</h4><p class="mini"><b>业务配置</b>：<span class="mono">aigc_work_agents / versions / plans / plan_stages / connectors / plugins / skills</span> 及各关联表。引擎与 ESM 共读写。</p></div>
+    <div class="card"><div class="ic" style="background:var(--kb-bg)">📄</div><h4>PostgreSQL 16</h4><p class="mini"><b>会话与记忆</b>：sessions / session_messages（含 segments、msg_scope、seq_num）、agent_memories（tsvector+GIN 全文检索）、session_task_records（plan 持久化）。生产走 PgBouncer。</p></div>
+    <div class="card"><div class="ic" style="background:var(--mcp-bg)">⚡</div><h4>Redis 7</h4><p class="mini"><b>队列 / 推送 / 缓存</b>：Stream 任务队列（agent/memory/distill + high）、Pub/Sub 会话事件、取消/暂停标记、Worker 心跳、配置缓存（TTL 60s）。</p></div>
+  </div>
+
+  <h3 class="block">Redis Pub/Sub 事件协议（引擎 → ESM → 前端）</h3>
+  <table class="tbl">
+    <thead><tr><th>事件</th><th>说明</th><th>事件</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td class="c">message_start</td><td>新 assistant 消息创建</td><td class="c">thinking</td><td>Agent 思考过程（流式/分块）</td></tr>
+      <tr><td class="c">chunk</td><td>流式正文片段</td><td class="c">tool_call / tool_result</td><td>工具调用与结果（含 source）</td></tr>
+      <tr><td class="c">form_request</td><td>请求用户输入表单（pending）</td><td class="c">agent_paused</td><td>因等待输入暂停</td></tr>
+      <tr><td class="c">task_dispatch</td><td>子 Agent 派发（含 steps）</td><td class="c">todo_update</td><td>待办清单变更</td></tr>
+      <tr><td class="c">message_end</td><td>消息生成完成</td><td class="c">message_error</td><td>生成失败</td></tr>
+      <tr><td class="c">audit_result</td><td>审计结果（通过/未通过）</td><td class="c">message_rollback</td><td>撤回完成（含归档数）</td></tr>
+    </tbody>
+  </table>
+  <p class="mini">ESM 侧 <span class="mono">streamEventsFromRedis(stream:session:{id})</span> 从 Redis Stream 读取 SSE 事件转发，支持<b>回放 + 实时</b>，并以 Redis Stream ID 作为 <span class="mono">Last-Event-ID</span> 支持断线重连。</p>
+</section>
+
+<!-- ============ ESM ============ -->
+<section class="chapter" id="esm">
+  <div class="ch-head">
+    <div class="ch-num" style="background:var(--esm);">5</div>
+    <div><div class="ch-tag">ESM 平台侧</div><h2>任务投递、会话管理与配置管理</h2></div>
+  </div>
+  <p class="ch-intro">ESM（<span class="mono">app/AppAgent</span>）是平台 / 管理 / 集成层，<b>直连 PG 模型、不通过 HTTP 调用引擎</b>，通过 Redis 与引擎协作。</p>
+
+  <div class="fig">
+    <div class="svgbox" style="min-width:760px">
+    <svg viewBox="0 0 1080 240" font-family="-apple-system,PingFang SC,Microsoft YaHei,sans-serif">
+      <defs><marker id="e1" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#0f766e"/></marker></defs>
+      <g font-size="12.5" font-weight="700">
+        <rect x="20" y="60" width="230" height="120" rx="12" fill="#f0fdfa" stroke="#99f6e4"/><text x="135" y="86" text-anchor="middle" fill="#0f766e">sendMessage 主流程</text>
+        <g font-size="10.5" fill="#4b7a76" font-weight="500"><text x="38" y="108">① 校验 issue 状态（挂起/完成拒绝）</text><text x="38" y="126">② 清理未提交表单暂停消息</text><text x="38" y="144">③ 持久化 user 消息（msg_scope=main）</text><text x="38" y="162">④ dispatchToStream 投递 payload</text></g>
+        <rect x="290" y="60" width="300" height="120" rx="12" fill="#fff" stroke="#99f6e4"/><text x="440" y="86" text-anchor="middle" fill="#0f766e">dispatchToStream（payload 组装）</text>
+        <g font-size="10.5" fill="#475569" font-weight="500" font-family="var(--mono)"><text x="308" y="108">session_id · user_message · context</text><text x="308" y="126">attachments · model_config_id · memory_scope</text><text x="308" y="144">run_mode · deep_thinking · message_id</text><text x="308" y="162">file_driver_type/config · extra_variables</text></g>
+        <rect x="630" y="60" width="150" height="120" rx="12" fill="#fff7ed" stroke="#fdba74"/><text x="705" y="92" text-anchor="middle" fill="#c2410c">XADD</text><text x="705" y="112" text-anchor="middle" fill="#9a5b2a" font-size="10.5" font-weight="500">stream:agent_tasks</text><text x="705" y="132" text-anchor="middle" fill="#9a5b2a" font-size="10" font-weight="500">type=agent_execute</text><text x="705" y="152" text-anchor="middle" fill="#9a5b2a" font-size="10" font-weight="500">→ 任务置「AI排队中」</text>
+        <rect x="820" y="60" width="240" height="120" rx="12" fill="#f0fdfa" stroke="#99f6e4"/><text x="940" y="86" text-anchor="middle" fill="#0f766e">SSE 转发</text>
+        <g font-size="10.5" fill="#4b7a76" font-weight="500"><text x="838" y="108">streamEventsFromRedis</text><text x="838" y="126">回放 + 实时</text><text x="838" y="144">Last-Event-ID 重连</text><text x="838" y="162">→ 前端流式渲染</text></g>
+      </g>
+      <g stroke="#0f766e" stroke-width="2"><line x1="250" y1="120" x2="290" y2="120" marker-end="url(#e1)"/><line x1="590" y1="120" x2="630" y2="120" marker-end="url(#e1)"/><line x1="780" y1="120" x2="820" y2="120" marker-end="url(#e1)"/></g>
+      <text x="540" y="216" text-anchor="middle" font-size="11.5" fill="#475569">高优先级任务（resume / audit / rollback / context_compress）→ stream:agent_tasks:high（用户实时等待）</text>
+    </svg>
+    </div>
+    <div class="cap">图 9 · ESM 任务投递与 SSE 转发（普通 / 高优先级双 Stream）</div>
+  </div>
+
+  <div class="grid g3">
+    <div class="card"><h4>任务方案阶段投递</h4><p class="mini"><span class="mono">triggerStageTask</span> 按阶段构建消息（阶段描述 + 工单），支持<b>回退重做提示</b>与<b>前序阶段总结</b>注入；会话按阶段创建（agent_id = stage.master_agent_id）。</p></div>
+    <div class="card"><h4>阶段总结投递</h4><p class="mini"><span class="mono">dispatchStageSummary</span>：msg_scope=stage_summary、history_scope=main、聚合兄弟会话；配置「阶段总结智能体」时引擎用其 user_prompt 模板渲染（<span class="mono">${stage.*}/${issue.*}</span>）。</p></div>
+    <div class="card"><h4>配置管理后台</h4><p class="mini">管理 Agent / 任务方案 / 连接器 / 插件 / 技能 / 知识库 / 数据表；工作智能体全局设置（上下文压缩、知识库选型、记忆提取、阶段总结等专用 Agent）。</p></div>
+  </div>
+  <div class="note n-ok"><div class="n-ic">ℹ️</div><div><b>ESM 另有一套轻量 Engine</b>（<span class="mono">app/AppAgent/Engine</span>：MCP + Skills + WorkflowEngine + 沙箱执行），服务于<b>工作流编排、数字人、内容生成</b>等场景，与本次说明的 Python Agent Worker 引擎是并行的两套能力——本材料聚焦后者（核心对话/工单编排引擎）。</div></div>
+</section>
+
+<!-- ============ APPENDIX ============ -->
+<section class="chapter" id="appendix">
+  <div class="ch-head">
+    <div class="ch-num" style="background:#334155;">A</div>
+    <div><div class="ch-tag">附录</div><h2>关键常量 · 数据表 · 环境变量速查</h2></div>
+  </div>
+  <div class="grid g2">
+    <div class="card"><h4>关键常量（引擎）</h4>
+      <table class="tbl" style="margin:6px 0">
+        <tbody>
+          <tr><td>Master 工具轮数上限</td><td class="c">_MASTER_MAX_TOOL_ROUNDS = 8</td></tr>
+          <tr><td>Sub 工具轮数上限</td><td class="c">5 轮</td></tr>
+          <tr><td>退化响应重试</td><td class="c">_MASTER_EMPTY_RESPONSE_RETRIES = 2</td></tr>
+          <tr><td>子 Agent 并发 / 超时</td><td class="c">AGENT_MAX_CONCURRENT=5 / 100s</td></tr>
+          <tr><td>重规划次数</td><td class="c">_MAX_REPLAN_ATTEMPTS = 1</td></tr>
+          <tr><td>计划步数上限</td><td class="c">_MAX_PLAN_STEPS = 20</td></tr>
+          <tr><td>记忆提取</td><td class="c">MIN_CHARS=100 / MAX=5</td></tr>
+          <tr><td>附件文本上限</td><td class="c">_ATTACHMENT_MAX_CHARS = 100_000</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card"><h4>关键环境变量（节选）</h4>
+      <table class="tbl" style="margin:6px 0">
+        <tbody>
+          <tr><td>进程数</td><td class="c">WORKER_AGENT/MEMORY/DISTILL_PROCESS_COUNT</td></tr>
+          <tr><td>LLM 默认参数</td><td class="c">LLM_DEFAULT_TEMPERATURE/MAX_TOKENS/TOP_P/TIMEOUT</td></tr>
+          <tr><td>远程 MCP</td><td class="c">MCP_CONNECT_TIMEOUT / SESSION_MAX / IDLE_TIMEOUT</td></tr>
+          <tr><td>知识库选型</td><td class="c">KB_AUTO_SELECT_ENABLED/MAX/SEARCH_ALL_BELOW</td></tr>
+          <tr><td>记忆提取</td><td class="c">MEMORY_LLM_API_BASE_URL/KEY/MODEL_ID</td></tr>
+          <tr><td>文件 / 工作目录</td><td class="c">WORKSPACE_BASE_DIR / FILE_*_MAX_SIZE</td></tr>
+          <tr><td>技能路径</td><td class="c">SKILL_FILES_DIR / TENANT_SKILL_FILES_DIR</td></tr>
+          <tr><td>监控</td><td class="c">WORKER_MONITOR_PORT=9100 / RESTART_*</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <h3 class="block">核心源码定位速查</h3>
+  <table class="tbl">
+    <thead><tr><th style="width:280px">能力</th><th>引擎（Python）文件</th><th>ESM（PHP）文件</th></tr></thead>
+    <tbody>
+      <tr><td>Agent 按需装载（6 SQL）</td><td class="c">agent/loader/_impl.py</td><td>—</td></tr>
+      <tr><td>执行引擎 / 并行检索</td><td class="c">agent/engine.py</td><td class="c">Services/AiWork/SessionService.php</td></tr>
+      <tr><td>主 Agent 多轮工具循环</td><td class="c">agent/master.py</td><td>—</td></tr>
+      <tr><td>子 Agent 派发 / DAG</td><td class="c">mcp/tools/dispatch.py · agent/executor.py · agent/dag.py</td><td>—</td></tr>
+      <tr><td>MCP 本地 / 远程</td><td class="c">mcp/__init__.py · mcp/remote.py · mcp/client.py</td><td>—</td></tr>
+      <tr><td>SKILL 两阶段</td><td class="c">skills/loader.py</td><td class="c">Repositories/WorkSkillRepository.php</td></tr>
+      <tr><td>提示词装配 / 变量</td><td class="c">llm/prompts.py · llm/prompt_vars.py</td><td>—</td></tr>
+      <tr><td>记忆检索 / 提取</td><td class="c">models/memory_pg.py · tasks/memory_tasks.py</td><td>—</td></tr>
+      <tr><td>知识库自动选型</td><td class="c">rag/kb_select.py · rag/kb_router.py</td><td class="c">Repositories/KnowledgeBaseRepository.php</td></tr>
+      <tr><td>知识蒸馏</td><td class="c">distillation/pipeline.py · tasks/distill_tasks.py</td><td class="c">Repositories/DistillationTaskRepository.php</td></tr>
+      <tr><td>多进程 / 监控</td><td class="c">worker_main.py · tasks/process_manager.py · monitor/server.py</td><td>—</td></tr>
+      <tr><td>会话 / 消息 / SSE</td><td class="c">tasks/agent_tasks.py · models/session_pg.py</td><td class="c">Controllers/Api/V1/MessageController.php</td></tr>
+    </tbody>
+  </table>
+
+  <div class="note n-brand"><div class="n-ic">🎯</div><div><b>一句话总结</b>这套系统的本质是：<b>配置（MySQL）定义「有哪些 Agent / 工具 / 技能 / 阶段」→ 装载（AgentLoader 6 SQL）把它们组装成一个快照 → 启动链路（提示词装配 + 参数 + 工具 + 并行上下文）把它喂给 LLM → 多轮工具循环 + DAG 子 Agent 协作完成执行 → 记忆与知识蒸馏沉淀经验</b>。ESM 平台负责配置管理与任务投递，Python 引擎负责编排与执行，Redis 作为解耦中枢。</div></div>
+</section>
+
+</main>
+
+<footer>
+  <div>本文档基于 <b>CSC Engine Develop / worker-agent-engine</b>（Python Agent Worker 引擎）与 <b>ESM Develop / app/AppAgent</b>（Laravel 平台）源码梳理生成，供技术说明会现场讲解使用。</div>
+  <div style="margin-top:6px">自包含 HTML · 内嵌 CSS/JS · 无外部依赖 · 桌面端展示优化 · 生成于 2026-09-10</div>
+</footer>
+
+<button class="top-btn" id="topBtn" title="回到顶部">↑</button>
+
+<script>
+(function(){
+  // progress bar + top button
+  var prog=document.getElementById('prog'), top=document.getElementById('topBtn');
+  function onScroll(){
+    var h=document.documentElement;
+    var sc=h.scrollTop||document.body.scrollTop;
+    var max=h.scrollHeight-h.clientHeight;
+    prog.style.width=(max>0?(sc/max*100):0)+'%';
+    top.classList.toggle('show',sc>600);
+  }
+  window.addEventListener('scroll',onScroll,{passive:true}); onScroll();
+  top.addEventListener('click',function(){window.scrollTo({top:0,behavior:'smooth'});});
+
+  // scrollspy
+  var links=[].slice.call(document.querySelectorAll('.nav-links a'));
+  var map={};
+  links.forEach(function(a){map[a.getAttribute('href').slice(1)]=a;});
+  var secs=links.map(function(a){return document.getElementById(a.getAttribute('href').slice(1));}).filter(Boolean);
+  function spy(){
+    var y=window.scrollY+90, cur=null;
+    secs.forEach(function(s){ if(s.offsetTop<=y) cur=s.id; });
+    links.forEach(function(a){a.classList.remove('active');});
+    if(cur&&map[cur]) map[cur].classList.add('active');
+  }
+  window.addEventListener('scroll',spy,{passive:true}); spy();
+})();
+</script>
+</body>
+</html>
